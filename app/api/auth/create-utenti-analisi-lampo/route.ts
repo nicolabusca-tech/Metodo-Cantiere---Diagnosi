@@ -37,18 +37,17 @@ export async function POST(request: NextRequest) {
     console.log('[v0] API: Creating Supabase client...')
     const supabase = createServerClient(supabaseUrl, serviceRoleKey)
 
-    console.log('[v0] API: Checking if utenti_analisi_lampo table exists by attempting insert...')
+    console.log('[v0] API: Creating utenti record...')
     const { data, error } = await supabase
-      .from('utenti_analisi_lampo')
+      .from('utenti')
       .insert({
         id: userId,
         email,
         nome,
         cognome,
         azienda: azienda || null,
-        product: 'audit',
-        has_paid: null,
-        form_status: null,
+        paid_analisi: false,
+        paid_diagnosi: false,
       })
       .select()
 
@@ -60,12 +59,22 @@ export async function POST(request: NextRequest) {
       console.error('[v0] - Hint:', error.hint)
       console.error('[v0] - Full error:', JSON.stringify(error))
       
-      // Se la tabella non esiste, restituisci un errore che spiega di contattare l'admin
+      if (error.code === '23505' || error.message?.includes('duplicate key')) {
+        const { data: updateData, error: updateError } = await supabase
+          .from('utenti')
+          .update({ email, nome, cognome, azienda: azienda || null, updated_at: new Date().toISOString() })
+          .eq('id', userId)
+          .select()
+        if (!updateError && updateData) {
+          return NextResponse.json({ success: true, data: updateData[0] })
+        }
+      }
+      
       if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
         return NextResponse.json(
           { 
             error: 'Database table not found. Please contact support.',
-            details: 'The utenti_analisi_lampo table may not exist in the database.',
+            details: 'The utenti table may not exist in the database.',
             code: error.code
           },
           { status: 500 }

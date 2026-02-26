@@ -2,6 +2,7 @@
 
 import { stripe } from '@/lib/stripe'
 import { PRODUCTS } from '@/lib/products'
+import { getCheckoutSummary, syncCheckoutBySessionId } from '@/lib/stripe-payments'
 
 interface CreateCheckoutSessionParams {
   productId: string
@@ -34,6 +35,8 @@ export async function createCheckoutSession({
       baseUrl = `https://${baseUrl}`
     }
 
+    const cancelPath = productId === 'diagnosi-strategica' ? '/payment-diagnosi-strategica' : '/payment'
+
     // Crea una Checkout Session seguendo la guida ufficiale Stripe
     // Ogni pagamento crea una nuova sessione completamente isolata
     const session = await stripe.checkout.sessions.create({
@@ -54,7 +57,7 @@ export async function createCheckoutSession({
       mode: 'payment',
       customer_email: customerEmail,
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/payment`,
+      cancel_url: `${baseUrl}${cancelPath}`,
       metadata: {
         user_id: userId,
         product_id: productId,
@@ -77,4 +80,30 @@ export async function createCheckoutSession({
     console.error('[v0] Error creating Checkout Session:', error)
     throw new Error(error.message || 'Failed to create checkout session')
   }
+}
+
+/**
+ * Verifica la sessione Stripe e aggiorna il database quando il pagamento è completato.
+ * Chiamata dalla pagina success dopo il redirect da Stripe Checkout.
+ */
+export async function markPaymentComplete(sessionId: string): Promise<{
+  success: boolean;
+  productId?: string;
+  userId?: string;
+  customerEmail?: string;
+  nome?: string;
+  cognome?: string;
+  azienda?: string;
+  error?: string;
+}> {
+  try {
+    return await syncCheckoutBySessionId(sessionId)
+  } catch (error: any) {
+    console.error('[v0] Error in markPaymentComplete:', error)
+    return { success: false, error: error.message || 'Errore durante la verifica del pagamento' }
+  }
+}
+
+export async function getCheckoutContext(sessionId: string) {
+  return getCheckoutSummary(sessionId)
 }

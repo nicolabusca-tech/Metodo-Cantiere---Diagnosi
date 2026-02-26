@@ -8,9 +8,10 @@ interface StripeCheckoutProps {
   productId: string
   userId: string
   customerEmail: string
+  buttonLabel?: string
 }
 
-export function StripeCheckout({ productId, userId, customerEmail }: StripeCheckoutProps) {
+export function StripeCheckout({ productId, userId, customerEmail, buttonLabel }: StripeCheckoutProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>('')
 
@@ -60,7 +61,7 @@ export function StripeCheckout({ productId, userId, customerEmail }: StripeCheck
             Caricamento...
           </span>
         ) : (
-          'Procedi al pagamento - €147,00'
+          buttonLabel || 'Procedi al pagamento'
         )}
       </Button>
 

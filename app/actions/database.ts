@@ -3,7 +3,7 @@
 // Cache busting: Timestamp 2026-02-13 13:30 - Fixed user_id to id column
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { Profile, Entitlement } from '@/lib/types'
+import type { Profile, Entitlement, Diagnosi } from '@/lib/types'
 
 export async function checkEmailExists(email: string): Promise<boolean> {
   const supabase = await createClient()
@@ -11,32 +11,11 @@ export async function checkEmailExists(email: string): Promise<boolean> {
   console.log('[v0] Checking if email exists:', email)
   
   try {
-    // Prova prima nella nuova tabella utenti
     const { data, error } = await supabase
       .from('utenti')
       .select('id')
       .eq('email', email)
       .limit(1)
-
-    // Se la tabella non esiste, controlla la vecchia tabella
-    if (error && error.code === 'PGRST205') {
-      console.log('[v0] Tabella utenti non esiste, uso fallback a utenti_analisi_lampo')
-      
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from('utenti_analisi_lampo')
-        .select('id')
-        .eq('email', email)
-        .limit(1)
-
-      if (fallbackError) {
-        console.error('[v0] Error checking email in utenti_analisi_lampo:', fallbackError)
-        return false
-      }
-
-      const emailExists = fallbackData && fallbackData.length > 0
-      console.log('[v0] Email exists in utenti_analisi_lampo:', emailExists)
-      return emailExists
-    }
 
     if (error) {
       console.error('[v0] Error checking email in utenti:', error)
@@ -224,9 +203,8 @@ export async function createUtentiAnalisiLampo(
         nome,
         cognome,
         azienda,
-        paid_analisi: null,
-        paid_diagnosi: null,
-        form_status: null,
+        paid_analisi: false,
+        paid_diagnosi: false,
       })
       .select()
 
@@ -246,47 +224,6 @@ export async function createUtentiAnalisiLampo(
       return updateData?.[0]
     }
 
-    // Se la tabella utenti non esiste, crea nella vecchia tabella utenti_analisi_lampo
-    if (error && error.code === 'PGRST205') {
-      console.log('[v0] Tabella utenti non esiste, uso fallback a utenti_analisi_lampo per creazione')
-      
-      let { data: fallbackData, error: fallbackError } = await supabase
-        .from('utenti_analisi_lampo')
-        .insert({
-          id: userId,
-          email,
-          nome,
-          cognome,
-          azienda,
-          product: 'audit',
-          has_paid: null,
-          form_status: null,
-        })
-        .select()
-
-      const isFallbackDuplicate = fallbackError?.code === '23505' || fallbackError?.message?.includes('duplicate key')
-      if (isFallbackDuplicate) {
-        const { data: updateData, error: updateError } = await supabase
-          .from('utenti_analisi_lampo')
-          .update({ email, nome, cognome, azienda })
-          .eq('id', userId)
-          .select()
-        if (updateError) {
-          console.error('[v0] Error updating utenti_analisi_lampo:', JSON.stringify(updateError))
-          throw new Error(`Failed to update user record: ${updateError.message}`)
-        }
-        return updateData?.[0]
-      }
-
-      if (fallbackError) {
-        console.error('[v0] Error creating utenti_analisi_lampo:', JSON.stringify(fallbackError))
-        throw new Error(`Failed to create user record: ${fallbackError.message}`)
-      }
-
-      console.log('[v0] Utenti_analisi_lampo record created successfully:', fallbackData)
-      return fallbackData?.[0]
-    }
-
     if (error) {
       console.error('[v0] Error creating utenti:', JSON.stringify(error))
       throw new Error(`Failed to create user record: ${error.message}`)
@@ -301,73 +238,45 @@ export async function createUtentiAnalisiLampo(
 }
 
 export async function getUtentiAnalisiLampo(userId: string) {
-  const supabase = await createClient()
-  
-  console.log('[v0] Fetching utenti for id:', userId)
-  
-  // Prova prima la VECCHIA tabella utenti_analisi_lampo (finché la migrazione non è completa)
-  const { data: fallbackData, error: fallbackError } = await supabase
-    .from('utenti_analisi_lampo')
-    .select('*')
-    .eq('id', userId)
-    .limit(1)
+  // Admin client per bypassare RLS: la tabella utenti può avere policy che bloccano la lettura.
+  // Sicuro: userId arriva sempre dalla sessione autenticata (server components).
+  const supabase = createAdminClient()
 
-  if (!fallbackError && fallbackData && fallbackData.length > 0) {
-    // Mappo i dati dalla vecchia struttura alla nuova
-    const mappedData = {
-      ...fallbackData[0],
-      paid_analisi: fallbackData[0].has_paid, // Mappo has_paid a paid_analisi
-      paid_diagnosi: null,
-    }
-
-    console.log('[v0] Found utenti_analisi_lampo record (mapped):', mappedData)
-    return mappedData
-  }
-
-  // Se la vecchia tabella non ha dati, prova la nuova tabella utenti
   const { data, error } = await supabase
     .from('utenti')
     .select('*')
     .eq('id', userId)
     .limit(1)
+    .maybeSingle()
 
   if (error) {
     console.error('[v0] Error fetching utenti:', JSON.stringify(error))
     return null
   }
 
-  if (!data || data.length === 0) {
-    console.log('[v0] No utenti record found for id:', userId)
-    return null
-  }
-
-  console.log('[v0] Found utenti record:', data[0])
-  return data[0]
+  return data ?? null
 }
 
-export async function getFormStatus(userId: string) {
-  const supabase = await createClient()
-  
-  console.log('[v0] Fetching form status from submissions for id:', userId)
-  
-  const { data, error } = await supabase
-    .from('submissions')
-    .select('form_status')
+export async function getFormStatus(
+  userId: string,
+  product: 'analisi-lampo' | 'diagnosi-strategica' = 'analisi-lampo'
+) {
+  const supabase = createAdminClient()
+
+  const formStatusColumn = product === 'diagnosi-strategica' ? 'form_status_diagnosi' : 'form_status_analisi'
+
+  const { data: utente, error: utenteError } = await supabase
+    .from('utenti')
+    .select(formStatusColumn)
     .eq('id', userId)
     .limit(1)
+    .maybeSingle()
 
-  if (error) {
-    console.error('[v0] Error fetching submissions:', JSON.stringify(error))
+  if (utenteError || !utente) {
     return null
   }
 
-  if (!data || data.length === 0) {
-    console.log('[v0] No submission record found for id:', userId)
-    return null
-  }
-
-  console.log('[v0] Found submission with form_status:', data[0].form_status)
-  return data[0].form_status
+  return utente[formStatusColumn] ?? null
 }
 
 export async function createUtentiDiagnosiStrategica(
@@ -381,56 +290,11 @@ export async function createUtentiDiagnosiStrategica(
   console.log('[v0] Creating/updating utenti for diagnosi - PRIMARY KEY COLUMN ID:', userId)
   
   try {
-    // Controlla se l'utente esiste
     const { data: existingUser, error: checkError } = await supabase
       .from('utenti')
       .select('id')
       .eq('id', userId)
       .limit(1)
-
-    // Se la tabella non esiste, usa il fallback
-    if (checkError && checkError.code === 'PGRST205') {
-      console.log('[v0] Tabella utenti non esiste, uso fallback a utenti_diagnosi_strategica')
-      
-      const { data: existingFallback, error: checkFallbackError } = await supabase
-        .from('utenti_diagnosi_strategica')
-        .select('id')
-        .eq('id', userId)
-        .limit(1)
-
-      if (checkFallbackError) {
-        console.error('[v0] Error checking utenti_diagnosi_strategica:', JSON.stringify(checkFallbackError))
-        throw checkFallbackError
-      }
-
-      if (existingFallback && existingFallback.length > 0) {
-        // L'utente esiste già, niente da fare
-        console.log('[v0] Utenti_diagnosi_strategica record already exists for id:', userId)
-        return await getUtentiDiagnosiStrategica(userId)
-      }
-
-      // Crea un nuovo record nella vecchia tabella
-      const { data, error } = await supabase
-        .from('utenti_diagnosi_strategica')
-        .insert({
-          id: userId,
-          email,
-          nome,
-          cognome,
-          product: 'diagnosi-strategica',
-          has_paid: null,
-          form_status: null,
-        })
-        .select()
-
-      if (error) {
-        console.error('[v0] Error creating utenti_diagnosi_strategica:', JSON.stringify(error))
-        throw new Error(`Failed to create user record: ${error.message}`)
-      }
-
-      console.log('[v0] Utenti_diagnosi_strategica record created successfully:', data)
-      return data?.[0]
-    }
 
     if (checkError) {
       console.error('[v0] Error checking utenti:', JSON.stringify(checkError))
@@ -443,7 +307,6 @@ export async function createUtentiDiagnosiStrategica(
       return await getUtentiAnalisiLampo(userId)
     }
 
-    // Crea un nuovo record
     const { data, error } = await supabase
       .from('utenti')
       .insert({
@@ -451,9 +314,8 @@ export async function createUtentiDiagnosiStrategica(
         email,
         nome,
         cognome,
-        paid_analisi: null,
-        paid_diagnosi: null,
-        form_status: null,
+        paid_analisi: false,
+        paid_diagnosi: false,
       })
       .select()
 
@@ -462,7 +324,6 @@ export async function createUtentiDiagnosiStrategica(
       throw new Error(`Failed to create user record: ${error.message}`)
     }
 
-    console.log('[v0] Utenti record created successfully:', data)
     return data?.[0]
   } catch (err: any) {
     console.error('[v0] Exception creating utenti:', err.message)
@@ -471,46 +332,103 @@ export async function createUtentiDiagnosiStrategica(
 }
 
 export async function getUtentiDiagnosiStrategica(userId: string) {
-  const supabase = await createClient()
-  
-  console.log('[v0] Fetching utenti for diagnosi - id:', userId)
-  
-  // Prova prima la VECCHIA tabella utenti_diagnosi_strategica (finché la migrazione non è completa)
-  const { data: fallbackData, error: fallbackError } = await supabase
-    .from('utenti_diagnosi_strategica')
-    .select('*')
-    .eq('id', userId)
-    .limit(1)
+  const supabase = createAdminClient()
 
-  if (!fallbackError && fallbackData && fallbackData.length > 0) {
-    // Mappo i dati dalla vecchia struttura alla nuova
-    const mappedData = {
-      ...fallbackData[0],
-      paid_analisi: null,
-      paid_diagnosi: fallbackData[0].has_paid, // Mappo has_paid a paid_diagnosi
-    }
-
-    console.log('[v0] Found utenti_diagnosi_strategica record (mapped):', mappedData)
-    return mappedData
-  }
-
-  // Se la vecchia tabella non ha dati, prova la nuova tabella utenti
   const { data, error } = await supabase
     .from('utenti')
     .select('*')
     .eq('id', userId)
     .limit(1)
+    .maybeSingle()
 
   if (error) {
     console.error('[v0] Error fetching utenti:', JSON.stringify(error))
     return null
   }
 
-  if (!data || data.length === 0) {
-    console.log('[v0] No utenti record found for id:', userId)
+  return data ?? null
+}
+
+export async function getDiagnosi(
+  userId: string,
+  tipo: 'analisi_lampo' | 'diagnosi_strategica'
+): Promise<Diagnosi | null> {
+  const supabase = createAdminClient()
+
+  const { data, error } = await supabase
+    .from('diagnosi')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('tipo', tipo)
+    .eq('enabled', true)
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[v0] Error fetching diagnosi:', JSON.stringify(error))
     return null
   }
 
-  console.log('[v0] Found utenti record:', data[0])
-  return data[0]
+  return data ?? null
+}
+
+export async function hasDiagnosiEnabled(
+  userId: string,
+  tipo: 'analisi_lampo' | 'diagnosi_strategica'
+): Promise<boolean> {
+  const supabase = createAdminClient()
+
+  const { data, error } = await supabase
+    .from('diagnosi')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('tipo', tipo)
+    .eq('enabled', true)
+    .limit(1)
+
+  if (error) {
+    console.error('[v0] Error checking diagnosi enabled:', JSON.stringify(error))
+    return false
+  }
+
+  return data !== null && data.length > 0
+}
+
+export async function getDiagnosiByToken(token: string): Promise<Diagnosi | null> {
+  const supabase = createAdminClient()
+
+  const { data, error } = await supabase
+    .from('diagnosi')
+    .select('*')
+    .eq('secret_token', token)
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[v0] Error fetching diagnosi by token:', JSON.stringify(error))
+    return null
+  }
+
+  return data ?? null
+}
+
+export async function updateDiagnosiByToken(
+  token: string,
+  updates: { diagnosi?: string; enabled?: boolean }
+): Promise<Diagnosi | null> {
+  const supabase = createAdminClient()
+
+  const { data, error } = await supabase
+    .from('diagnosi')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('secret_token', token)
+    .select('*')
+    .single()
+
+  if (error) {
+    console.error('[v0] Error updating diagnosi by token:', JSON.stringify(error))
+    return null
+  }
+
+  return data ?? null
 }

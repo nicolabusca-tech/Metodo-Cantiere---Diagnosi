@@ -45,3 +45,14 @@ export interface DiagnosiReport {
   created_at: string
   updated_at: string
 }
+
+export interface Diagnosi {
+  id: string
+  user_id: string
+  tipo: 'analisi_lampo' | 'diagnosi_strategica'
+  diagnosi: string
+  enabled: boolean
+  secret_token: string
+  created_at: string
+  updated_at: string
+}

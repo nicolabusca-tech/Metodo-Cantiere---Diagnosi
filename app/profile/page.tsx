@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Image from 'next/image'
 import Link from 'next/link'
+import { isPaidValue } from '@/lib/utils'
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
@@ -44,9 +45,9 @@ export default function ProfilePage() {
 
       setUser(user)
 
-      // Carica i dati dall'utenti_analisi_lampo
+      // Carica i dati dalla tabella utenti (fonte primaria)
       const { data, error } = await supabase
-        .from('utenti_analisi_lampo')
+        .from('utenti')
         .select('*')
         .eq('id', user.id)
         .single()
@@ -73,7 +74,7 @@ export default function ProfilePage() {
     try {
       const supabase = createClient()
       const { error } = await supabase
-        .from('utenti_analisi_lampo')
+        .from('utenti')
         .update({
           nome,
           cognome,
@@ -294,16 +295,24 @@ export default function ProfilePage() {
           {/* Sezione Servizi */}
           <div className="bg-white rounded-lg border border-neutral-200 p-8">
             <h2 className="text-2xl font-semibold text-neutral-900 mb-6">Servizi Acquistati</h2>
-            {utentiData?.has_paid ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-green-800 font-medium">✓ Audit - Pagamento completato</p>
-                <p className="text-green-700 text-sm mt-1">Hai accesso a tutti i servizi di audit</p>
+            {isPaidValue(utentiData?.paid_analisi) || isPaidValue(utentiData?.paid_diagnosi) ? (
+              <div className="space-y-3">
+                {isPaidValue(utentiData?.paid_analisi) && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-green-800 font-medium">✓ Analisi Lampo - Pagamento completato</p>
+                  </div>
+                )}
+                {isPaidValue(utentiData?.paid_diagnosi) && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-green-800 font-medium">✓ Diagnosi Strategica - Pagamento completato</p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
                 <p className="text-neutral-600 font-medium">Nessun servizio acquistato</p>
-                <Link href="/payment" className="text-primary hover:underline text-sm mt-2 inline-block">
-                  Acquista ora →
+                <Link href="/prodotti" className="text-primary hover:underline text-sm mt-2 inline-block">
+                  Vai ai prodotti →
                 </Link>
               </div>
             )}

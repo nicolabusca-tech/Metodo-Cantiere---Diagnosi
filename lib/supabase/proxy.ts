@@ -14,6 +14,13 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse
   }
 
+  const cookieOptions = {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 400, // 400 giorni - persistenza oltre la chiusura del browser
+    sameSite: 'lax' as const,
+    secure: process.env.NODE_ENV === 'production',
+  }
+
   try {
     // With Fluid compute, don't put this client in a global environment
     // variable. Always create a new one on each request.
@@ -33,10 +40,14 @@ export async function updateSession(request: NextRequest) {
               request,
             })
             cookiesToSet.forEach(({ name, value, options }) =>
-              supabaseResponse.cookies.set(name, value, options),
+              supabaseResponse.cookies.set(name, value, {
+                ...cookieOptions,
+                ...options,
+              }),
             )
           },
         },
+        cookieOptions,
       },
     )
 
@@ -51,10 +62,12 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (
-    // if the user is not logged in and the app path, in this case, /protected, is accessed, redirect to the login page
+    // Redirect to login if user is not authenticated on protected routes
     (request.nextUrl.pathname.startsWith('/protected') ||
-      request.nextUrl.pathname.startsWith('/pagamento') ||
-      request.nextUrl.pathname.startsWith('/successo')) &&
+      request.nextUrl.pathname.startsWith('/payment') ||
+      request.nextUrl.pathname.startsWith('/success') ||
+      request.nextUrl.pathname.startsWith('/prodotti') ||
+      request.nextUrl.pathname.startsWith('/profile')) &&
     !user
   ) {
     // no user, potentially respond by redirecting the user to the login page

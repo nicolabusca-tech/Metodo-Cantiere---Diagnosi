@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { StripeCheckout } from '@/components/stripe-checkout'
 import { getUtentiAnalisiLampo, getFormStatus } from '@/app/actions/database'
+import { isPaidValue } from '@/lib/utils'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -45,14 +46,20 @@ export default async function PaymentPage() {
   const customerCompany = utentiData?.azienda || user.user_metadata?.azienda || ''
   
   // Controlla lo stato del pagamento per Analisi Lampo
-  const isPaidAnalisiLampo = utentiData?.paid_analisi === 'paid'
+  const isPaidAnalisiLampo = isPaidValue(utentiData?.paid_analisi)
   
   console.log('[v0] Payment page - isPaidAnalisiLampo:', isPaidAnalisiLampo)
 
   // Se non ha pagato, mostra il box di pagamento
-  if (!isPaidAnalisiLampo || isPaidAnalisiLampo === 'unpaid') {
+  if (!isPaidAnalisiLampo) {
     return (
       <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <Button asChild variant="outline" className="border-neutral-300">
+            <Link href="/prodotti">Indietro: torna ai prodotti</Link>
+          </Button>
+        </div>
+
         <div className="flex flex-col items-center justify-center mb-8">
           <Image
             src="/logo-metodo-cantiere.png"
@@ -100,6 +107,7 @@ export default async function PaymentPage() {
             productId="analisi-lampo"
             userId={userId}
             customerEmail={customerEmail}
+            buttonLabel="Avanti: procedi al pagamento - €147,00"
           />
         </div>
       </div>
@@ -107,7 +115,7 @@ export default async function PaymentPage() {
   }
 
   // Se ha pagato, controlla il form_status dalla tabella submissions
-  const formStatus = await getFormStatus(userId)
+  const formStatus = await getFormStatus(userId, 'analisi-lampo')
   
   console.log('[v0] Payment page - formStatus:', formStatus)
 
@@ -144,6 +152,9 @@ export default async function PaymentPage() {
           <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
             La tua Analisi Lampo di Metodo Cantiere® sarà pronta tra circa 3 giorni!
           </h2>
+          <Button asChild variant="outline" className="border-neutral-300">
+            <Link href="/prodotti">Indietro: torna ai prodotti</Link>
+          </Button>
         </div>
       </div>
     )
@@ -152,6 +163,12 @@ export default async function PaymentPage() {
   // Se ha pagato ma il form non è completato
   return (
     <div className="max-w-4xl mx-auto">
+      <div className="mb-6">
+        <Button asChild variant="outline" className="border-neutral-300">
+          <Link href="/prodotti">Indietro: torna ai prodotti</Link>
+        </Button>
+      </div>
+
       <div className="flex flex-col items-center justify-center mb-8">
           <Image
             src="/logo-metodo-cantiere.png"
@@ -173,8 +190,8 @@ export default async function PaymentPage() {
         </p>
       </div>
 
-      {formStatus === 'incomplete' ? (
-        // L'utente ha pagato ma non ha iniziato il form
+      {(formStatus === 'incomplete' || formStatus === null || formStatus === undefined) ? (
+        // L'utente ha pagato ma non ha iniziato il form (o form_status è null dopo il pagamento)
         <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8 text-center">
           <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
             Completa il form per ricevere la tua analisi Lampo di Metodo Cantiere®
@@ -185,11 +202,9 @@ export default async function PaymentPage() {
             className="bg-primary hover:bg-primary/90 text-white px-8 h-12"
           >
             <Link
-              href={`https://v0-form-analisi-lampo.vercel.app/?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(customerEmail)}&nome=${encodeURIComponent(customerName)}&cognome=${encodeURIComponent(customerSurname)}&azienda=${encodeURIComponent(customerCompany)}`}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`/form?user_id=${encodeURIComponent(userId)}&userId=${encodeURIComponent(userId)}&email=${encodeURIComponent(customerEmail)}&nome=${encodeURIComponent(customerName)}&cognome=${encodeURIComponent(customerSurname)}&azienda=${encodeURIComponent(customerCompany)}`}
             >
-              Completa il form per ricevere la tua analisi Lampo di Metodo Cantiere®
+              Avanti: completa il form Analisi Lampo
             </Link>
           </Button>
         </div>
@@ -205,11 +220,9 @@ export default async function PaymentPage() {
             className="bg-primary hover:bg-primary/90 text-white px-8 h-12"
           >
             <Link
-              href={`https://v0-form-analisi-lampo.vercel.app/?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(customerEmail)}&nome=${encodeURIComponent(customerName)}&cognome=${encodeURIComponent(customerSurname)}&azienda=${encodeURIComponent(customerCompany)}&resume=true`}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`/form?user_id=${encodeURIComponent(userId)}&userId=${encodeURIComponent(userId)}&email=${encodeURIComponent(customerEmail)}&nome=${encodeURIComponent(customerName)}&cognome=${encodeURIComponent(customerSurname)}&azienda=${encodeURIComponent(customerCompany)}&resume=true`}
             >
-              Porta a termine il form per ricevere la tua analisi Lampo di Metodo Cantiere®
+              Avanti: riprendi il form Analisi Lampo
             </Link>
           </Button>
         </div>

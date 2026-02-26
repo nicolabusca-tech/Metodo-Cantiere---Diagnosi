@@ -1,6 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+const COOKIE_OPTIONS = {
+  path: '/',
+  maxAge: 60 * 60 * 24 * 400, // 400 giorni - persistenza oltre la chiusura del browser
+  sameSite: 'lax' as const,
+  secure: process.env.NODE_ENV === 'production',
+}
+
 /**
  * Especially important if using Fluid compute: Don't put this client in a
  * global variable. Always create a new client within each function when using
@@ -20,7 +27,7 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
+              cookieStore.set(name, value, { ...COOKIE_OPTIONS, ...options }),
             )
           } catch {
             // The "setAll" method was called from a Server Component.
@@ -29,6 +36,7 @@ export async function createClient() {
           }
         },
       },
+      cookieOptions: COOKIE_OPTIONS,
     },
   )
 }

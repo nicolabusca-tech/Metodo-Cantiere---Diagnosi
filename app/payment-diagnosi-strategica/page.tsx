@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { StripeCheckout } from '@/components/stripe-checkout'
 import { getUtentiDiagnosiStrategica, createUtentiDiagnosiStrategica, getFormStatus } from '@/app/actions/database'
+import { isPaidValue } from '@/lib/utils'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -52,19 +53,22 @@ export default async function PaymentDiagnosiStrategicaPage() {
     console.error('[v0] Payment diagnosi page - Error fetching utentiData:', err)
   }
 
-  const customerName = utentiData?.nome || user.user_metadata?.nome || ''
-  const customerSurname = utentiData?.cognome || user.user_metadata?.cognome || ''
-  
   // Controlla lo stato del pagamento per Diagnosi Strategica
-  const isPaidDiagnosi = utentiData?.paid_diagnosi === 'paid'
+  const isPaidDiagnosi = isPaidValue(utentiData?.paid_diagnosi)
   
   console.log('[v0] Payment diagnosi page - isPaidDiagnosi:', isPaidDiagnosi)
 
   // Se non ha pagato, mostra il box di pagamento
-  if (!isPaidDiagnosi || isPaidDiagnosi === 'unpaid') {
+  if (!isPaidDiagnosi) {
     return (
       <div className="min-h-screen bg-neutral-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
+          <div className="mb-6">
+            <Button asChild variant="outline" className="border-neutral-300">
+              <Link href="/prodotti">Indietro: torna ai prodotti</Link>
+            </Button>
+          </div>
+
           <div className="flex flex-col items-center justify-center mb-8">
             <Image
               src="/logo-metodo-cantiere.png"
@@ -108,6 +112,7 @@ export default async function PaymentDiagnosiStrategicaPage() {
               productId="diagnosi-strategica"
               userId={userId}
               customerEmail={customerEmail}
+              buttonLabel="Avanti: procedi al pagamento - €497,00"
             />
           </div>
         </div>
@@ -116,7 +121,7 @@ export default async function PaymentDiagnosiStrategicaPage() {
   }
 
   // Se ha pagato, controlla il form_status dalla tabella submissions
-  const formStatus = await getFormStatus(userId)
+  const formStatus = await getFormStatus(userId, 'diagnosi-strategica')
   
   console.log('[v0] Payment diagnosi page - formStatus:', formStatus)
 
@@ -141,6 +146,9 @@ export default async function PaymentDiagnosiStrategicaPage() {
             <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
               La tua Diagnosi Strategica di Metodo Cantiere® sarà pronta tra circa 10 giorni!
             </h2>
+            <Button asChild variant="outline" className="border-neutral-300">
+              <Link href="/prodotti">Indietro: torna ai prodotti</Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -151,6 +159,12 @@ export default async function PaymentDiagnosiStrategicaPage() {
   return (
     <div className="min-h-screen bg-neutral-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
+        <div className="mb-6">
+          <Button asChild variant="outline" className="border-neutral-300">
+            <Link href="/prodotti">Indietro: torna ai prodotti</Link>
+          </Button>
+        </div>
+
         <div className="flex flex-col items-center justify-center mb-8">
             <Image
               src="/logo-metodo-cantiere.png"
@@ -172,8 +186,8 @@ export default async function PaymentDiagnosiStrategicaPage() {
           </p>
         </div>
 
-        {formStatus === 'incomplete' ? (
-          // L'utente ha pagato ma non ha iniziato il form
+        {(formStatus === 'incomplete' || formStatus === null || formStatus === undefined) ? (
+          // L'utente ha pagato ma non ha iniziato il form (o form_status è null dopo il pagamento)
           <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8 text-center">
             <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
               Completa il form per ricevere la tua Diagnosi Strategica di Metodo Cantiere®
@@ -184,11 +198,9 @@ export default async function PaymentDiagnosiStrategicaPage() {
               className="bg-primary hover:bg-primary/90 text-white px-8 h-12"
             >
               <Link
-                href={`https://v0-form-analisi-lampo.vercel.app/?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(customerEmail)}&nome=${encodeURIComponent(customerName)}&cognome=${encodeURIComponent(customerSurname)}&product=diagnosi-strategica`}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/form-diagnosi"
               >
-                Completa il form per ricevere la tua Diagnosi Strategica di Metodo Cantiere®
+                Avanti: apri il percorso Diagnosi Strategica
               </Link>
             </Button>
           </div>
@@ -204,11 +216,9 @@ export default async function PaymentDiagnosiStrategicaPage() {
               className="bg-primary hover:bg-primary/90 text-white px-8 h-12"
             >
               <Link
-                href={`https://v0-form-analisi-lampo.vercel.app/?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(customerEmail)}&nome=${encodeURIComponent(customerName)}&cognome=${encodeURIComponent(customerSurname)}&product=diagnosi-strategica&resume=true`}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/form-diagnosi?resume=true"
               >
-                Porta a termine il form per ricevere la tua Diagnosi Strategica di Metodo Cantiere®
+                Avanti: riprendi il percorso Diagnosi Strategica
               </Link>
             </Button>
           </div>
