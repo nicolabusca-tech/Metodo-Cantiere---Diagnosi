@@ -22,7 +22,18 @@ import {
   Eye,
   Settings,
   Sparkles,
+  FileText,
+  ExternalLink,
 } from "lucide-react"
+import Link from "next/link"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import type { FormSection, FormQuestion } from "@/lib/setup-seed"
 import { DEFAULT_ANALISI_LAMPO_CONFIG, DEFAULT_DIAGNOSI_STRATEGICA_CONFIG } from "@/lib/setup-seed"
 
@@ -743,6 +754,136 @@ function AnalysisTabContent({ tipo }: { tipo: AnalysisType }) {
   )
 }
 
+const TIPO_LABELS: Record<string, string> = {
+  analisi_lampo: "Analisi Lampo",
+  diagnosi_strategica: "Diagnosi Strategica",
+}
+
+// ────────────────────────────────────────────
+// Diagnosi List Section
+// ────────────────────────────────────────────
+function DiagnosiListSection() {
+  const [diagnosi, setDiagnosi] = useState<
+    Array<{
+      id: string
+      user_id: string
+      tipo: string
+      secret_token: string
+      enabled: boolean
+      created_at: string
+      updated_at: string
+      user_email?: string | null
+      user_label: string
+    }>
+  >([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchDiagnosi = async () => {
+      try {
+        const res = await fetch("/api/setup/diagnosi")
+        const json = await res.json()
+        if (!res.ok) {
+          setError(json.error || "Errore nel caricamento")
+          return
+        }
+        setDiagnosi(json.diagnosi ?? [])
+      } catch {
+        setError("Impossibile connettersi al server")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDiagnosi()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-neutral-500">Caricamento diagnosi...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+        <p className="text-sm text-red-700">{error}</p>
+      </div>
+    )
+  }
+
+  if (diagnosi.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center justify-center py-12 text-neutral-500">
+            <FileText className="mb-4 h-12 w-12" />
+            <p className="text-lg font-medium">Nessuna diagnosi</p>
+            <p className="text-sm mt-1">Le diagnosi generate appariranno qui.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          Elenco diagnosi
+        </CardTitle>
+        <CardDescription>
+          Tutte le diagnosi generate. Clicca su Modifica per accedere alla pagina di revisione.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Utente</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Data creazione</TableHead>
+              <TableHead>Stato</TableHead>
+              <TableHead className="text-right">Azioni</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {diagnosi.map((d) => (
+              <TableRow key={d.id}>
+                <TableCell className="font-medium">{d.user_label}</TableCell>
+                <TableCell>{TIPO_LABELS[d.tipo] ?? d.tipo}</TableCell>
+                <TableCell>
+                  {new Date(d.created_at).toLocaleDateString("it-IT", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={d.enabled ? "default" : "secondary"}>
+                    {d.enabled ? "Attiva" : "Bozza"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/review/${d.secret_token}`} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      Modifica
+                    </Link>
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  )
+}
+
 // ────────────────────────────────────────────
 // Main Setup Page
 // ────────────────────────────────────────────
@@ -793,9 +934,10 @@ export default function SetupPage() {
         </div>
 
         <Tabs defaultValue="analisi_lampo" className="space-y-6">
-          <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsList className="grid grid-cols-3 w-full max-w-lg">
             <TabsTrigger value="analisi_lampo">Analisi Lampo</TabsTrigger>
             <TabsTrigger value="diagnosi_strategica">Diagnosi Strategica</TabsTrigger>
+            <TabsTrigger value="diagnosi">Diagnosi</TabsTrigger>
           </TabsList>
 
           <TabsContent value="analisi_lampo">
@@ -804,6 +946,10 @@ export default function SetupPage() {
 
           <TabsContent value="diagnosi_strategica">
             <AnalysisTabContent tipo="diagnosi_strategica" />
+          </TabsContent>
+
+          <TabsContent value="diagnosi">
+            <DiagnosiListSection />
           </TabsContent>
         </Tabs>
       </div>

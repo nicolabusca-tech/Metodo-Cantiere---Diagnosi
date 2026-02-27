@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   try {
     const { password } = await request.json()
 
-    const expectedPassword = process.env.SETUP_PASSWORD || 'MetodoCantere2026'
+    const expectedPassword = process.env.SETUP_PASSWORD || '1234'
 
     if (password !== expectedPassword) {
       return NextResponse.json(
