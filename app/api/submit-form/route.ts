@@ -75,7 +75,11 @@ export async function POST(request: NextRequest) {
           user_id: userId,
           tipo,
           diagnosi: "",
+          volume_1: "",
+          volume_2: "",
+          volume_3: "",
           enabled: false,
+          progresso: "in corso",
         },
         { onConflict: "user_id,tipo" }
       )

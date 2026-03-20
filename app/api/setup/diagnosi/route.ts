@@ -20,7 +20,7 @@ export async function GET() {
 
     const { data: diagnosiList, error: diagnosiError } = await supabase
       .from('diagnosi')
-      .select('id, user_id, tipo, secret_token, enabled, created_at, updated_at')
+      .select('id, user_id, tipo, secret_token, enabled, progresso, created_at, updated_at')
       .order('created_at', { ascending: false })
 
     if (diagnosiError) {

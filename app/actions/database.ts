@@ -414,7 +414,13 @@ export async function getDiagnosiByToken(token: string): Promise<Diagnosi | null
 
 export async function updateDiagnosiByToken(
   token: string,
-  updates: { diagnosi?: string; enabled?: boolean }
+  updates: {
+    diagnosi?: string
+    enabled?: boolean
+    volume_1?: string
+    volume_2?: string
+    volume_3?: string
+  }
 ): Promise<Diagnosi | null> {
   const supabase = createAdminClient()
 

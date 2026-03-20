@@ -1,7 +1,7 @@
 'use client'
 
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import { useMemo } from 'react'
+import { contentToSafeHtml } from '@/lib/diagnosi-content'
 
 interface DiagnosiViewerProps {
   content: string
@@ -9,6 +9,19 @@ interface DiagnosiViewerProps {
 }
 
 export function DiagnosiViewer({ content, className = '' }: DiagnosiViewerProps) {
+  const safeHtml = useMemo(() => contentToSafeHtml(content), [content])
+
+  const isStructuredDocument = safeHtml.includes('diagnosi-document')
+
+  if (isStructuredDocument) {
+    return (
+      <article
+        className={className}
+        dangerouslySetInnerHTML={{ __html: safeHtml }}
+      />
+    )
+  }
+
   return (
     <article
       className={`prose prose-neutral max-w-none
@@ -25,10 +38,7 @@ export function DiagnosiViewer({ content, className = '' }: DiagnosiViewerProps)
         prose-td:px-4 prose-td:py-2 prose-td:border prose-td:border-neutral-200
         prose-a:text-primary prose-a:no-underline hover:prose-a:underline
         ${className}`}
-    >
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-        {content}
-      </ReactMarkdown>
-    </article>
+      dangerouslySetInnerHTML={{ __html: safeHtml }}
+    />
   )
 }

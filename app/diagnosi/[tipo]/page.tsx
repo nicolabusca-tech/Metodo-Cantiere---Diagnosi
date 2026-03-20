@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getDiagnosi } from '@/app/actions/database'
+import { displayDiagnosiContent } from '@/lib/diagnosi-content'
 import { DiagnosiWithDownload } from '@/components/diagnosi-with-download'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -48,6 +49,16 @@ export default async function DiagnosiPage({
   }
 
   const diagnosi = await getDiagnosi(user.id, label.dbTipo)
+
+  const displayContent = diagnosi
+    ? displayDiagnosiContent({
+        tipo: label.dbTipo,
+        diagnosi: diagnosi.diagnosi,
+        volume_1: diagnosi.volume_1,
+        volume_2: diagnosi.volume_2,
+        volume_3: diagnosi.volume_3,
+      })
+    : ''
 
   if (!diagnosi) {
     return (
@@ -119,7 +130,7 @@ export default async function DiagnosiPage({
             month: 'long',
             year: 'numeric',
           })}`}
-          content={diagnosi.diagnosi}
+          content={displayContent}
           tipo={tipo}
         />
       </div>

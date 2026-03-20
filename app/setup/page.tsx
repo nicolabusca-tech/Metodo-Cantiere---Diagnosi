@@ -36,6 +36,8 @@ import {
 } from "@/components/ui/table"
 import type { FormSection, FormQuestion } from "@/lib/setup-seed"
 import { DEFAULT_ANALISI_LAMPO_CONFIG, DEFAULT_DIAGNOSI_STRATEGICA_CONFIG } from "@/lib/setup-seed"
+import type { DiagnosiProgresso } from "@/lib/types"
+import { DiagnosiProgressoIndicator } from "@/components/diagnosi-progresso-indicator"
 
 type AnalysisType = "analisi_lampo" | "diagnosi_strategica"
 
@@ -581,10 +583,70 @@ function FormConfigEditor({ tipo }: { tipo: AnalysisType }) {
 // ────────────────────────────────────────────
 // Prompt Editor
 // ────────────────────────────────────────────
+
+const DIAGNOSI_STRATEGICA_PROMPT_FIELDS = [
+  {
+    key: "prompt_ricerca_azienda_cliente" as const,
+    title: "Prompt Ricerca Azienda Cliente",
+    placeholder: "Testo del prompt per la ricerca sull'azienda cliente...",
+  },
+  {
+    key: "prompt_ricerca_competitor" as const,
+    title: "Prompt Ricerca Competitor",
+    placeholder: "Testo del prompt per la ricerca sui competitor...",
+  },
+  {
+    key: "prompt_mercato_locale" as const,
+    title: "Prompt Mercato Locale",
+    placeholder: "Testo del prompt per l'analisi del mercato locale...",
+  },
+  {
+    key: "prompt_volume_1" as const,
+    title: "Prompt Volume 1",
+    placeholder: "Testo del prompt per il Volume 1...",
+  },
+  {
+    key: "prompt_volume_2" as const,
+    title: "Prompt Volume 2",
+    placeholder: "Testo del prompt per il Volume 2...",
+  },
+  {
+    key: "prompt_volume_3" as const,
+    title: "Prompt Volume 3",
+    placeholder: "Testo del prompt per il Volume 3...",
+  },
+  {
+    key: "prompt_impaginazione" as const,
+    title: "Prompt Impaginazione",
+    placeholder: "Testo del prompt per layout e impaginazione del documento...",
+  },
+]
+
+type StrategicaPromptState = {
+  prompt_ricerca_azienda_cliente: string
+  prompt_ricerca_competitor: string
+  prompt_mercato_locale: string
+  prompt_volume_1: string
+  prompt_volume_2: string
+  prompt_volume_3: string
+  prompt_impaginazione: string
+}
+
+const emptyStrategicaPrompts = (): StrategicaPromptState => ({
+  prompt_ricerca_azienda_cliente: "",
+  prompt_ricerca_competitor: "",
+  prompt_mercato_locale: "",
+  prompt_volume_1: "",
+  prompt_volume_2: "",
+  prompt_volume_3: "",
+  prompt_impaginazione: "",
+})
+
 function PromptEditor({ tipo }: { tipo: AnalysisType }) {
   const [promptGenerale, setPromptGenerale] = useState("")
   const [promptCompetitor, setPromptCompetitor] = useState("")
   const [promptRiscrittura, setPromptRiscrittura] = useState("")
+  const [strategicaPrompts, setStrategicaPrompts] = useState<StrategicaPromptState>(emptyStrategicaPrompts)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
@@ -596,9 +658,21 @@ function PromptEditor({ tipo }: { tipo: AnalysisType }) {
         const res = await fetch(`/api/setup/prompt?tipo=${tipo}`)
         const json = await res.json()
         if (json.data) {
-          setPromptGenerale(json.data.prompt_generale || "")
-          setPromptCompetitor(json.data.prompt_competitor || "")
-          setPromptRiscrittura(json.data.prompt_riscrittura || "")
+          if (tipo === "analisi_lampo") {
+            setPromptGenerale(json.data.prompt_generale || "")
+            setPromptCompetitor(json.data.prompt_competitor || "")
+            setPromptRiscrittura(json.data.prompt_riscrittura || "")
+          } else {
+            setStrategicaPrompts({
+              prompt_ricerca_azienda_cliente: json.data.prompt_ricerca_azienda_cliente || "",
+              prompt_ricerca_competitor: json.data.prompt_ricerca_competitor || "",
+              prompt_mercato_locale: json.data.prompt_mercato_locale || "",
+              prompt_volume_1: json.data.prompt_volume_1 || "",
+              prompt_volume_2: json.data.prompt_volume_2 || "",
+              prompt_volume_3: json.data.prompt_volume_3 || "",
+              prompt_impaginazione: json.data.prompt_impaginazione || "",
+            })
+          }
         }
       } catch {
         // keep defaults
@@ -613,15 +687,22 @@ function PromptEditor({ tipo }: { tipo: AnalysisType }) {
     setSaving(true)
     setStatus(null)
     try {
+      const body =
+        tipo === "analisi_lampo"
+          ? {
+              tipo,
+              prompt_generale: promptGenerale,
+              prompt_competitor: promptCompetitor,
+              prompt_riscrittura: promptRiscrittura,
+            }
+          : {
+              tipo,
+              ...strategicaPrompts,
+            }
       const res = await fetch("/api/setup/prompt", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo,
-          prompt_generale: promptGenerale,
-          prompt_competitor: promptCompetitor,
-          prompt_riscrittura: promptRiscrittura,
-        }),
+        body: JSON.stringify(body),
       })
       if (res.ok) {
         setStatus("Prompt salvati con successo!")
@@ -665,59 +746,85 @@ function PromptEditor({ tipo }: { tipo: AnalysisType }) {
       )}
 
       <div className="space-y-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Prompt Generale</CardTitle>
-            <CardDescription className="text-sm">
-              Prompt principale per la generazione della diagnosi
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={promptGenerale}
-              onChange={(e) => setPromptGenerale(e.target.value)}
-              placeholder="Inserisci il prompt generale per la generazione della diagnosi..."
-              rows={10}
-              className="font-mono text-sm"
-            />
-          </CardContent>
-        </Card>
+        {tipo === "analisi_lampo" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Prompt Generale</CardTitle>
+                <CardDescription className="text-sm">
+                  Prompt principale per la generazione della diagnosi
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={promptGenerale}
+                  onChange={(e) => setPromptGenerale(e.target.value)}
+                  placeholder="Inserisci il prompt generale per la generazione della diagnosi..."
+                  rows={10}
+                  className="font-mono text-sm"
+                />
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Prompt Competitor (Deep Research)</CardTitle>
-            <CardDescription className="text-sm">
-              Prompt per l'analisi approfondita dei competitor
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={promptCompetitor}
-              onChange={(e) => setPromptCompetitor(e.target.value)}
-              placeholder="Inserisci il prompt per l'analisi competitor..."
-              rows={10}
-              className="font-mono text-sm"
-            />
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Prompt Competitor (Deep Research)</CardTitle>
+                <CardDescription className="text-sm">
+                  Prompt per l'analisi approfondita dei competitor
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={promptCompetitor}
+                  onChange={(e) => setPromptCompetitor(e.target.value)}
+                  placeholder="Inserisci il prompt per l'analisi competitor..."
+                  rows={10}
+                  className="font-mono text-sm"
+                />
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Prompt Riscrittura Finale</CardTitle>
-            <CardDescription className="text-sm">
-              Prompt per la riscrittura e raffinamento finale della diagnosi
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={promptRiscrittura}
-              onChange={(e) => setPromptRiscrittura(e.target.value)}
-              placeholder="Inserisci il prompt per la riscrittura finale..."
-              rows={10}
-              className="font-mono text-sm"
-            />
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Prompt Riscrittura Finale</CardTitle>
+                <CardDescription className="text-sm">
+                  Prompt per la riscrittura e raffinamento finale della diagnosi
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={promptRiscrittura}
+                  onChange={(e) => setPromptRiscrittura(e.target.value)}
+                  placeholder="Inserisci il prompt per la riscrittura finale..."
+                  rows={10}
+                  className="font-mono text-sm"
+                />
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          DIAGNOSI_STRATEGICA_PROMPT_FIELDS.map(({ key, title, placeholder }) => (
+            <Card key={key}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={strategicaPrompts[key]}
+                  onChange={(e) =>
+                    setStrategicaPrompts((prev) => ({
+                      ...prev,
+                      [key]: e.target.value,
+                    }))
+                  }
+                  placeholder={placeholder}
+                  rows={10}
+                  className="font-mono text-sm"
+                />
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   )
@@ -759,26 +866,26 @@ const TIPO_LABELS: Record<string, string> = {
   diagnosi_strategica: "Diagnosi Strategica",
 }
 
+type DiagnosiSetupListRow = {
+  id: string
+  user_id: string
+  tipo: string
+  secret_token: string
+  enabled: boolean
+  progresso: DiagnosiProgresso
+  created_at: string
+  updated_at: string
+  user_email?: string | null
+  user_label: string
+}
+
 // ────────────────────────────────────────────
 // Diagnosi List Section
 // ────────────────────────────────────────────
 function DiagnosiListSection() {
-  const [diagnosi, setDiagnosi] = useState<
-    Array<{
-      id: string
-      user_id: string
-      tipo: string
-      secret_token: string
-      enabled: boolean
-      created_at: string
-      updated_at: string
-      user_email?: string | null
-      user_label: string
-    }>
-  >([])
+  const [diagnosi, setDiagnosi] = useState<DiagnosiSetupListRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
   useEffect(() => {
     const fetchDiagnosi = async () => {
       try {
@@ -788,7 +895,15 @@ function DiagnosiListSection() {
           setError(json.error || "Errore nel caricamento")
           return
         }
-        setDiagnosi(json.diagnosi ?? [])
+        const rows = (json.diagnosi ?? []) as Array<
+          Omit<DiagnosiSetupListRow, "progresso"> & { progresso?: string }
+        >
+        setDiagnosi(
+          rows.map((r) => ({
+            ...r,
+            progresso: r.progresso === "completato" ? "completato" : "in corso",
+          }))
+        )
       } catch {
         setError("Impossibile connettersi al server")
       } finally {
@@ -847,6 +962,7 @@ function DiagnosiListSection() {
               <TableHead>Tipo</TableHead>
               <TableHead>Data creazione</TableHead>
               <TableHead>Stato</TableHead>
+              <TableHead>Progresso</TableHead>
               <TableHead className="text-right">Azioni</TableHead>
             </TableRow>
           </TableHeader>
@@ -866,6 +982,9 @@ function DiagnosiListSection() {
                   <Badge variant={d.enabled ? "default" : "secondary"}>
                     {d.enabled ? "Attiva" : "Bozza"}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                  <DiagnosiProgressoIndicator progresso={d.progresso} />
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="outline" size="sm" asChild>

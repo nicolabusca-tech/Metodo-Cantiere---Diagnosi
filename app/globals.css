@@ -92,3 +92,552 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* ============================================================
+   DIAGNOSI DOCUMENT — Styled to match the branded PDF output
+   ============================================================ */
+
+.diagnosi-document {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #1a1a1a;
+  line-height: 1.75;
+  font-size: 15px;
+}
+
+.diagnosi-document p {
+  margin: 0 0 1rem;
+}
+
+.diagnosi-document h3 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 2rem 0 0.75rem;
+}
+
+.diagnosi-document em {
+  font-style: italic;
+}
+
+.diagnosi-document strong {
+  font-weight: 700;
+  color: #111;
+}
+
+/* Strategica: three DB columns rendered as one continuous document */
+.diagnosi-strategica-unified .diagnosi-volume-seam {
+  height: 1px;
+  margin: 2.5rem 0;
+  background: linear-gradient(to right, transparent, #d4d4d4 15%, #d4d4d4 85%, transparent);
+  border: 0;
+}
+
+/* ---- Cover ---- */
+
+.diagnosi-cover {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(160deg, #111 0%, #1e1e1e 100%);
+  color: #fff;
+  border-radius: 4px;
+}
+
+.cover-label {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 1.5rem;
+}
+
+.cover-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 0.5rem;
+  color: #fff;
+}
+
+.cover-subtitle {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  color: rgba(255,255,255,0.7);
+  margin: 0 0 2.5rem;
+}
+
+.cover-meta {
+  text-align: left;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 1.25rem 1.75rem;
+  margin-bottom: 2.5rem;
+  min-width: 320px;
+}
+
+.cover-meta-row {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.85);
+  padding: 0.2rem 0;
+}
+
+.cover-meta-label {
+  font-weight: 700;
+  color: #e8712a;
+}
+
+.cover-volumes {
+  margin-bottom: 2rem;
+}
+
+.cover-volumes-intro {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 0.75rem;
+}
+
+.cover-volume-item {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.65);
+  padding: 0.15rem 0;
+}
+
+.cover-volume-item strong {
+  color: #fff;
+}
+
+.cover-motto {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 1rem;
+}
+
+/* ---- Letter ---- */
+
+.diagnosi-letter {
+  padding: 2.5rem 0;
+}
+
+.letter-date {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.letter-addressee {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.letter-subject {
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.letter-closing {
+  margin-top: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.letter-signature {
+  margin-bottom: 2rem;
+}
+
+.letter-signature .signature-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 0;
+}
+
+.letter-signature .signature-role {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0;
+}
+
+.letter-signature .signature-url {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.85rem;
+  color: #e8712a;
+  margin-bottom: 0;
+}
+
+.letter-motto {
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #888;
+  border-top: 1px solid #e5e5e5;
+  padding-top: 1rem;
+}
+
+/* ---- Page break ---- */
+
+.diagnosi-page-break {
+  height: 1px;
+  background: #e5e5e5;
+  margin: 2.5rem 0;
+  page-break-after: always;
+}
+
+@media print {
+  .diagnosi-page-break {
+    height: 0;
+    background: none;
+    margin: 0;
+    page-break-after: always;
+  }
+}
+
+/* ---- Section ---- */
+
+.diagnosi-section {
+  padding: 0 0 2rem;
+}
+
+.section-header {
+  margin-bottom: 2rem;
+}
+
+.section-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 2px solid #e8712a;
+  padding-bottom: 0.5rem;
+}
+
+.section-header-title {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e8712a;
+}
+
+.section-header-company {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.section-label {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e8712a;
+  margin-bottom: 0.25rem;
+}
+
+.section-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 1.5rem;
+  line-height: 1.25;
+}
+
+.section-author {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e5e5;
+}
+
+.section-author .signature-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0;
+}
+
+.section-author .signature-role {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0;
+}
+
+/* ---- Highlight blockquote ---- */
+
+.diagnosi-highlight {
+  border-left: 4px solid #e8712a;
+  background: #fdf6f0;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 6px 6px 0;
+  font-style: normal;
+}
+
+.diagnosi-highlight p {
+  margin: 0 0 0.5rem;
+  color: #333;
+}
+
+.diagnosi-highlight p:last-child {
+  margin-bottom: 0;
+}
+
+.diagnosi-scenario {
+  background: #f9f5f1;
+  border-left-color: #c4843a;
+}
+
+.diagnosi-closing-highlight {
+  background: #f5f0eb;
+}
+
+/* ---- Tables ---- */
+
+.diagnosi-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.diagnosi-table thead th {
+  background: #f5f5f5;
+  font-weight: 700;
+  text-align: left;
+  padding: 0.7rem 1rem;
+  border: 1px solid #e0e0e0;
+  color: #333;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.diagnosi-table tbody td {
+  padding: 0.65rem 1rem;
+  border: 1px solid #e5e5e5;
+  vertical-align: top;
+  color: #444;
+}
+
+.diagnosi-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.diagnosi-table-summary tbody td:first-child {
+  font-weight: 600;
+  color: #222;
+}
+
+/* ---- Status indicators ---- */
+
+.status-ok {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: #e6f7e9;
+  color: #1a8a3a;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.status-warning {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: #fff5e0;
+  color: #c28100;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.status-missing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: #fde8e8;
+  color: #c62828;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* ---- Priority labels ---- */
+
+.priority-urgent {
+  display: inline-block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.55rem;
+  border-radius: 3px;
+  background: #c62828;
+  color: #fff;
+}
+
+.priority-high {
+  display: inline-block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.55rem;
+  border-radius: 3px;
+  background: #e8712a;
+  color: #fff;
+}
+
+.priority-strategic {
+  display: inline-block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.55rem;
+  border-radius: 3px;
+  background: #1565c0;
+  color: #fff;
+}
+
+.priority-maintain {
+  display: inline-block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.55rem;
+  border-radius: 3px;
+  background: #2e7d32;
+  color: #fff;
+}
+
+/* ---- Footer ---- */
+
+.diagnosi-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  color: #999;
+  border-top: 1px solid #e5e5e5;
+  padding-top: 0.75rem;
+  margin-top: 2.5rem;
+}
+
+.footer-page {
+  font-weight: 600;
+  color: #777;
+}
+
+/* ---- Next Volume ---- */
+
+.diagnosi-next-volume {
+  text-align: center;
+  margin: 2.5rem 0 1.5rem;
+  padding: 2rem 1.5rem;
+  background: #f9f9f9;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+}
+
+.next-volume-label {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #e8712a;
+  margin-bottom: 0.15rem;
+}
+
+.next-volume-subtitle {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 0.5rem;
+}
+
+.next-volume-desc {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 0;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 640px) {
+  .diagnosi-document {
+    font-size: 14px;
+  }
+
+  .diagnosi-cover {
+    min-height: auto;
+    padding: 2rem 1rem;
+  }
+
+  .cover-title {
+    font-size: 2rem;
+  }
+
+  .cover-meta {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+  }
+
+  .diagnosi-table {
+    font-size: 0.8rem;
+  }
+
+  .diagnosi-table thead th,
+  .diagnosi-table tbody td {
+    padding: 0.5rem 0.6rem;
+  }
+
+  .section-header-bar {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+}
