@@ -49,6 +49,7 @@ function rowHasDisplayContent(d: DiagnosiData): boolean {
 
 export default function ReviewPage() {
   const { token } = useParams<{ token: string }>()
+  const reviewToken = Array.isArray(token) ? token[0] : token
 
   const [diagnosi, setDiagnosi] = useState<DiagnosiData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,16 +64,24 @@ export default function ReviewPage() {
 
   const fetchDiagnosi = useCallback(async () => {
     try {
-      const res = await fetch(`/api/review/${token}`)
+      if (!reviewToken) {
+        setError('Token mancante nell’URL.')
+        return
+      }
+
+      const res = await fetch(`/api/review/${reviewToken}`)
+      const rawText = await res.text()
+
       let json: { error?: string; diagnosi?: DiagnosiData } | null = null
       try {
-        json = (await res.json()) as { error?: string; diagnosi?: DiagnosiData }
+        json = JSON.parse(rawText) as { error?: string; diagnosi?: DiagnosiData }
       } catch {
         setError(
           'Risposta del server non valida. Se il problema persiste, verifica su Vercel le variabili NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.'
         )
         return
       }
+
       if (!res.ok) {
         setError(json?.error || 'Errore nel caricamento')
         return
@@ -97,11 +106,16 @@ export default function ReviewPage() {
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [reviewToken])
 
   useEffect(() => {
-    if (token) fetchDiagnosi()
-  }, [token, fetchDiagnosi])
+    if (!reviewToken) {
+      setLoading(false)
+      setError('Token mancante nell’URL.')
+      return
+    }
+    fetchDiagnosi()
+  }, [reviewToken, fetchDiagnosi])
 
   const previewContent = useMemo(() => {
     if (!diagnosi) return ' '
@@ -143,7 +157,7 @@ export default function ReviewPage() {
             }
           : { diagnosi: draft }
 
-      const res = await fetch(`/api/review/${token}`, {
+      const res = await fetch(`/api/review/${reviewToken}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -175,7 +189,7 @@ export default function ReviewPage() {
     if (!diagnosi) return
     setSaveStatus('saving')
     try {
-      const res = await fetch(`/api/review/${token}`, {
+      const res = await fetch(`/api/review/${reviewToken}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled }),

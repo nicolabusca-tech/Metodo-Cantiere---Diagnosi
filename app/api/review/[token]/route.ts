@@ -32,7 +32,9 @@ export async function GET(
     }
 
     const supabaseOrErr = adminClientOrError()
-    if (supabaseOrErr instanceof NextResponse) return supabaseOrErr
+    if (supabaseOrErr instanceof NextResponse) {
+      return supabaseOrErr
+    }
     const supabase = supabaseOrErr
 
     const { data, error } = await supabase
