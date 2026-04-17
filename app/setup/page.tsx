@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import {
   ChevronDown,
   ChevronUp,
@@ -24,6 +25,7 @@ import {
   Sparkles,
   FileText,
   ExternalLink,
+  Gift,
 } from "lucide-react"
 import Link from "next/link"
 import {
@@ -38,6 +40,7 @@ import type { FormSection, FormQuestion } from "@/lib/setup-seed"
 import { DEFAULT_ANALISI_LAMPO_CONFIG, DEFAULT_DIAGNOSI_STRATEGICA_CONFIG } from "@/lib/setup-seed"
 import type { DiagnosiProgresso } from "@/lib/types"
 import { DiagnosiProgressoIndicator } from "@/components/diagnosi-progresso-indicator"
+import { isPaidValue } from "@/lib/utils"
 
 type AnalysisType = "analisi_lampo" | "diagnosi_strategica"
 
@@ -76,7 +79,7 @@ function PasswordGate({ onAuth }: { onAuth: () => void }) {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError("")
     setLoading(true)
@@ -1004,6 +1007,210 @@ function DiagnosiListSection() {
 }
 
 // ────────────────────────────────────────────
+// Accessi omaggio (Setup)
+// ────────────────────────────────────────────
+
+type UtenteAccessRow = {
+  id: string
+  email: string | null
+  nome: string | null
+  cognome: string | null
+  azienda: string | null
+  paid_analisi: unknown
+  paid_diagnosi: unknown
+  access_omaggio_analisi: boolean | null
+  access_omaggio_diagnosi: boolean | null
+  form_status_analisi: string | null
+  form_status_diagnosi: string | null
+}
+
+function userLabel(u: UtenteAccessRow): string {
+  const name = [u.nome, u.cognome].filter(Boolean).join(" ").trim()
+  return name || u.email || u.id
+}
+
+function OmaggioAccessSection() {
+  const [filter, setFilter] = useState("")
+  const [users, setUsers] = useState<UtenteAccessRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [patching, setPatching] = useState<{ userId: string; field: "analisi" | "diagnosi" } | null>(null)
+
+  const loadUsers = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/setup/user-access?list=1")
+      const json = await res.json()
+      if (!res.ok) {
+        setError(json.error || "Errore nel caricamento")
+        setUsers([])
+        return
+      }
+      setUsers(json.data?.users ?? [])
+    } catch {
+      setError("Errore di connessione")
+      setUsers([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadUsers()
+  }, [loadUsers])
+
+  const f = filter.trim().toLowerCase()
+  const filtered = f
+    ? users.filter((u) => {
+        const hay = `${u.email ?? ""} ${u.nome ?? ""} ${u.cognome ?? ""} ${u.id}`.toLowerCase()
+        return hay.includes(f)
+      })
+    : users
+
+  const patchOmaggio = async (userId: string, field: "analisi" | "diagnosi", value: boolean) => {
+    setPatching({ userId, field })
+    setError(null)
+    try {
+      const res = await fetch("/api/setup/user-access", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, [field]: value }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setError(json.error || "Salvataggio fallito")
+        return
+      }
+      const updated = json.data?.user as UtenteAccessRow | undefined
+      if (updated) {
+        setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...updated } : u)))
+      }
+    } catch {
+      setError("Errore di connessione")
+    } finally {
+      setPatching(null)
+    }
+  }
+
+  const isPatching = (userId: string, field: "analisi" | "diagnosi") =>
+    patching?.userId === userId && patching?.field === field
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5" />
+              Accessi omaggio
+            </CardTitle>
+            <CardDescription className="mt-1 max-w-2xl">
+              Elenco utenti con stato pagamento (Analisi Lampo e Diagnosi Strategica). Per chi non ha pagato puoi
+              abilitare l&apos;accesso omaggio al form. Se ha già pagato, l&apos;omaggio non è necessario (switch
+              disattivato).
+            </CardDescription>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => loadUsers()} disabled={loading}>
+            Aggiorna elenco
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <Label htmlFor="filter-utenti" className="shrink-0 text-neutral-600">
+            Filtra
+          </Label>
+          <Input
+            id="filter-utenti"
+            placeholder="Nome, email o UUID…"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="max-w-md"
+          />
+          <span className="text-sm text-neutral-500">
+            {filtered.length} di {users.length} utenti
+          </span>
+        </div>
+
+        {error && (
+          <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>
+        )}
+
+        {loading ? (
+          <p className="text-sm text-neutral-500 py-8 text-center">Caricamento utenti…</p>
+        ) : (
+          <div className="rounded-md border border-neutral-200 overflow-x-auto max-h-[70vh] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Utente</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="whitespace-nowrap">Analisi — pagamento</TableHead>
+                  <TableHead className="whitespace-nowrap text-center">Omaggio</TableHead>
+                  <TableHead className="whitespace-nowrap">Diagnosi — pagamento</TableHead>
+                  <TableHead className="whitespace-nowrap text-center">Omaggio</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-neutral-500 py-8">
+                      Nessun utente in elenco.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((u) => {
+                    const paidA = isPaidValue(u.paid_analisi)
+                    const paidD = isPaidValue(u.paid_diagnosi)
+                    return (
+                      <TableRow key={u.id}>
+                        <TableCell className="font-medium max-w-[140px]">
+                          <span className="line-clamp-2">{userLabel(u)}</span>
+                        </TableCell>
+                        <TableCell className="text-sm text-neutral-600 max-w-[200px] break-all">
+                          {u.email ?? "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={paidA ? "default" : "secondary"}>
+                            {paidA ? "Pagato" : "Non pagato"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={!!u.access_omaggio_analisi}
+                            disabled={paidA || isPatching(u.id, "analisi")}
+                            title={paidA ? "Già pagato — omaggio non necessario" : "Accesso omaggio Analisi Lampo"}
+                            onCheckedChange={(v) => patchOmaggio(u.id, "analisi", v)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={paidD ? "default" : "secondary"}>
+                            {paidD ? "Pagato" : "Non pagato"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={!!u.access_omaggio_diagnosi}
+                            disabled={paidD || isPatching(u.id, "diagnosi")}
+                            title={paidD ? "Già pagato — omaggio non necessario" : "Accesso omaggio Diagnosi Strategica"}
+                            onCheckedChange={(v) => patchOmaggio(u.id, "diagnosi", v)}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ────────────────────────────────────────────
 // Main Setup Page
 // ────────────────────────────────────────────
 export default function SetupPage() {
@@ -1053,10 +1260,19 @@ export default function SetupPage() {
         </div>
 
         <Tabs defaultValue="analisi_lampo" className="space-y-6">
-          <TabsList className="grid grid-cols-3 w-full max-w-lg">
-            <TabsTrigger value="analisi_lampo">Analisi Lampo</TabsTrigger>
-            <TabsTrigger value="diagnosi_strategica">Diagnosi Strategica</TabsTrigger>
-            <TabsTrigger value="diagnosi">Diagnosi</TabsTrigger>
+          <TabsList className="grid w-full max-w-3xl grid-cols-2 sm:grid-cols-4 gap-1 h-auto p-1">
+            <TabsTrigger value="analisi_lampo" className="text-xs sm:text-sm">
+              Analisi Lampo
+            </TabsTrigger>
+            <TabsTrigger value="diagnosi_strategica" className="text-xs sm:text-sm">
+              Diagnosi Strategica
+            </TabsTrigger>
+            <TabsTrigger value="diagnosi" className="text-xs sm:text-sm">
+              Diagnosi
+            </TabsTrigger>
+            <TabsTrigger value="accessi_omaggio" className="text-xs sm:text-sm">
+              Accessi omaggio
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="analisi_lampo">
@@ -1069,6 +1285,10 @@ export default function SetupPage() {
 
           <TabsContent value="diagnosi">
             <DiagnosiListSection />
+          </TabsContent>
+
+          <TabsContent value="accessi_omaggio">
+            <OmaggioAccessSection />
           </TabsContent>
         </Tabs>
       </div>

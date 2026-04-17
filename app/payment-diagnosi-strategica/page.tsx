@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { StripeCheckout } from '@/components/stripe-checkout'
 import { getUtentiDiagnosiStrategica, createUtentiDiagnosiStrategica, getFormStatus, hasDiagnosiEnabled } from '@/app/actions/database'
-import { isPaidValue } from '@/lib/utils'
+import { hasProductAccess } from '@/lib/utils'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -54,7 +54,7 @@ export default async function PaymentDiagnosiStrategicaPage() {
   }
 
   // Controlla lo stato del pagamento per Diagnosi Strategica
-  const isPaidDiagnosi = isPaidValue(utentiData?.paid_diagnosi)
+  const isPaidDiagnosi = hasProductAccess(utentiData?.paid_diagnosi, utentiData?.access_omaggio_diagnosi)
   
   // Se non ha pagato, mostra il box di pagamento
   if (!isPaidDiagnosi) {

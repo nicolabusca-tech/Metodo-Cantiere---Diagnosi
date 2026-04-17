@@ -11,3 +11,8 @@ export function isPaidValue(value: unknown): boolean {
   if (typeof value === 'string' && ['paid', 'true', 't'].includes(value.toLowerCase())) return true
   return false
 }
+
+/** Accesso al form se pagamento effettivo o flag omaggio da Setup */
+export function hasProductAccess(paid: unknown, omaggio: unknown): boolean {
+  return isPaidValue(paid) || isPaidValue(omaggio)
+}

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getUtentiAnalisiLampo, getFormStatus, hasDiagnosiEnabled } from '@/app/actions/database'
-import { isPaidValue } from '@/lib/utils'
+import { hasProductAccess } from '@/lib/utils'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -52,8 +52,8 @@ export default async function ProdottiPage() {
     console.error('[v0] Prodotti page - Error fetching data:', err)
   }
 
-  const isPaidAnalisi = isPaidValue(utentiData?.paid_analisi)
-  const isPaidDiagnosi = isPaidValue(utentiData?.paid_diagnosi)
+  const isPaidAnalisi = hasProductAccess(utentiData?.paid_analisi, utentiData?.access_omaggio_analisi)
+  const isPaidDiagnosi = hasProductAccess(utentiData?.paid_diagnosi, utentiData?.access_omaggio_diagnosi)
 
   const stateAnalisi = getProductState(isPaidAnalisi, formStatusAnalisi === 'completed', diagnosiEnabledAnalisi)
   const stateDiagnosi = getProductState(isPaidDiagnosi, formStatusDiagnosi === 'completed', diagnosiEnabledDiagnosi)

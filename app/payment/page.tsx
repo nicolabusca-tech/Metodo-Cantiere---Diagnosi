@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { StripeCheckout } from '@/components/stripe-checkout'
 import { getUtentiAnalisiLampo, getFormStatus, hasDiagnosiEnabled } from '@/app/actions/database'
-import { isPaidValue } from '@/lib/utils'
+import { hasProductAccess } from '@/lib/utils'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -46,7 +46,7 @@ export default async function PaymentPage() {
   const customerCompany = utentiData?.azienda || user.user_metadata?.azienda || ''
   
   // Controlla lo stato del pagamento per Analisi Lampo
-  const isPaidAnalisiLampo = isPaidValue(utentiData?.paid_analisi)
+  const isPaidAnalisiLampo = hasProductAccess(utentiData?.paid_analisi, utentiData?.access_omaggio_analisi)
   
   // Se non ha pagato, mostra il box di pagamento
   if (!isPaidAnalisiLampo) {

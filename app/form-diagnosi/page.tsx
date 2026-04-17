@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getUtentiDiagnosiStrategica } from '@/app/actions/database'
-import { isPaidValue } from '@/lib/utils'
+import { hasProductAccess } from '@/lib/utils'
 
 export default async function FormDiagnosiPage() {
   const supabase = await createClient()
@@ -14,7 +14,7 @@ export default async function FormDiagnosiPage() {
   }
 
   const utentiData = await getUtentiDiagnosiStrategica(user.id)
-  const isPaidDiagnosi = isPaidValue(utentiData?.paid_diagnosi)
+  const isPaidDiagnosi = hasProductAccess(utentiData?.paid_diagnosi, utentiData?.access_omaggio_diagnosi)
 
   if (!isPaidDiagnosi) {
     redirect('/payment-diagnosi-strategica')
