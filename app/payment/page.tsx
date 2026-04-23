@@ -105,7 +105,6 @@ export default async function PaymentPage() {
             productId="analisi-lampo"
             userId={userId}
             customerEmail={customerEmail}
-            buttonLabel="Avanti: procedi al pagamento - €147,00"
           />
         </div>
       </div>

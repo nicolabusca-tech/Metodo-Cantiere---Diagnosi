@@ -4,6 +4,12 @@ import { stripe } from '@/lib/stripe'
 import { PRODUCTS } from '@/lib/products'
 import { getCheckoutSummary, syncCheckoutBySessionId } from '@/lib/stripe-payments'
 
+/** Path di ritorno se l’utente annulla Stripe Checkout (una entry per ogni prodotto in PRODUCTS) */
+const CANCEL_PATH_BY_PRODUCT: Record<string, string> = {
+  'analisi-lampo': '/payment',
+  'diagnosi-strategica': '/payment-diagnosi-strategica',
+}
+
 interface CreateCheckoutSessionParams {
   productId: string
   userId: string
@@ -35,7 +41,10 @@ export async function createCheckoutSession({
       baseUrl = `https://${baseUrl}`
     }
 
-    const cancelPath = productId === 'diagnosi-strategica' ? '/payment-diagnosi-strategica' : '/payment'
+    const cancelPath = CANCEL_PATH_BY_PRODUCT[productId]
+    if (!cancelPath) {
+      throw new Error(`No cancel URL path configured for product "${productId}"`)
+    }
 
     // Crea una Checkout Session seguendo la guida ufficiale Stripe
     // Ogni pagamento crea una nuova sessione completamente isolata

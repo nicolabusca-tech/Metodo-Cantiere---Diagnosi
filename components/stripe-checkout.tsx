@@ -3,15 +3,15 @@
 import { useState } from 'react'
 import { createCheckoutSession } from '@/app/actions/stripe'
 import { Button } from '@/components/ui/button'
+import { getCheckoutPayButtonLabel } from '@/lib/products'
 
 interface StripeCheckoutProps {
   productId: string
   userId: string
   customerEmail: string
-  buttonLabel?: string
 }
 
-export function StripeCheckout({ productId, userId, customerEmail, buttonLabel }: StripeCheckoutProps) {
+export function StripeCheckout({ productId, userId, customerEmail }: StripeCheckoutProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>('')
 
@@ -61,7 +61,7 @@ export function StripeCheckout({ productId, userId, customerEmail, buttonLabel }
             Caricamento...
           </span>
         ) : (
-          buttonLabel || 'Procedi al pagamento'
+          getCheckoutPayButtonLabel(productId)
         )}
       </Button>
 

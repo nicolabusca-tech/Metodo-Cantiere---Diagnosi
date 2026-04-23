@@ -110,7 +110,6 @@ export default async function PaymentDiagnosiStrategicaPage() {
               productId="diagnosi-strategica"
               userId={userId}
               customerEmail={customerEmail}
-              buttonLabel="Avanti: procedi al pagamento - €497,00"
             />
           </div>
         </div>
