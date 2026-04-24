@@ -1,3 +1,4 @@
+import { use } from 'react'
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getDiagnosi } from '@/app/actions/database'
@@ -26,13 +27,16 @@ export async function generateMetadata({
   }
 }
 
-export default async function DiagnosiPage({
+export default function DiagnosiPage({
   params,
 }: {
   params: Promise<{ tipo: string }>
 }) {
-  const { tipo } = await params
+  const { tipo } = use(params)
+  return <DiagnosiPageBody tipo={tipo} />
+}
 
+async function DiagnosiPageBody({ tipo }: { tipo: string }) {
   if (!VALID_TYPES.includes(tipo as typeof VALID_TYPES[number])) {
     notFound()
   }

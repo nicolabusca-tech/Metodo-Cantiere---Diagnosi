@@ -57,7 +57,7 @@ export default function LoginPage() {
             priority
             className="w-auto h-auto"
           />
-          <p className="text-2xl font-bold text-primary mt-2">Analisi Lampo</p>
+          <p className="text-2xl font-bold text-primary mt-2">Portale Strategico</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8">
