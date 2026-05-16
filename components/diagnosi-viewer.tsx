@@ -19,14 +19,16 @@ export function DiagnosiViewer({ content, className = '' }: DiagnosiViewerProps)
   // Allinea il rendering a video con il PDF: applica le stesse trasformazioni
   // grafiche (volume-opener, donut chart, VP-callout XL, pull-quote XL,
   // running head dinamico, widget peso, strip ®) dopo che React ha montato
-  // l'HTML strutturato. removeOldFooter:false perche' a video il footer
-  // template e' decorativo (a differenza del PDF dove la numerazione la mette
-  // Chromium nativo via footerTemplate).
+  // l'HTML strutturato. removeOldFooter:true anche a video: a browser non
+  // c'e' il concetto di "pagine" (e' uno scroll continuo), quindi un footer
+  // ripetuto con "Pag. N" che riparte da 1 ogni volume sarebbe solo
+  // un'incoerenza rumorosa rispetto al PDF. Il documento diventa un flusso
+  // continuo stile libro digitale.
   useEffect(() => {
     if (!isStructuredDocument) return
     const el = containerRef.current
     if (!el) return
-    applyDiagnosiTransforms(el, { removeOldFooter: false })
+    applyDiagnosiTransforms(el, { removeOldFooter: true })
   }, [isStructuredDocument, safeHtml])
 
   if (isStructuredDocument) {
