@@ -123,12 +123,13 @@ export function applyDiagnosiTransforms(
   }
 
   // 0b. Tabelle corte non si spezzano mai fra pagine.
-  // Conto le righe (header + body): se <= 8 totali, applico break-inside:avoid.
-  // Le tabelle lunghe (calendari fasi, scorecard estese) lasciano spezzare
-  // naturalmente con header ripetuto. Soglia 8 = circa mezza pagina A4.
+  // Conto le righe (header + body): se <= 5 totali, applico break-inside:avoid.
+  // Soglia bassa di proposito: tabelle medie/lunghe spezzano normalmente con
+  // header ripetuto, evitando che blocchi mediamente grandi "saltino" alla
+  // pagina successiva lasciando spazi vuoti.
   Array.from(container.querySelectorAll('table')).forEach((tbl) => {
     const rows = tbl.querySelectorAll('tr').length
-    if (rows <= 8) {
+    if (rows <= 5) {
       ;(tbl as HTMLElement).style.breakInside = 'avoid'
       ;(tbl as HTMLElement).style.pageBreakInside = 'avoid'
     }

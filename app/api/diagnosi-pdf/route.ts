@@ -155,11 +155,13 @@ export async function GET(req: Request) {
         }
       }
 
-      // 0b. Tabelle corte (<= 8 righe totali) non si spezzano mai fra pagine.
-      // Le tabelle lunghe spezzano normalmente con header ripetuto.
+      // 0b. Tabelle corte (<= 5 righe totali) non si spezzano mai fra pagine.
+      // Soglia bassa: tabelle medie/lunghe spezzano normalmente con header
+      // ripetuto, evitando che blocchi mediamente grandi "saltino" alla
+      // pagina successiva lasciando spazi vuoti.
       Array.from(document.querySelectorAll('table')).forEach((tbl) => {
         const rows = tbl.querySelectorAll('tr').length
-        if (rows <= 8) {
+        if (rows <= 5) {
           ;(tbl as HTMLElement).style.breakInside = 'avoid'
           ;(tbl as HTMLElement).style.pageBreakInside = 'avoid'
         }

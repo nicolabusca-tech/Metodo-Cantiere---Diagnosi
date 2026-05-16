@@ -1614,6 +1614,10 @@ td .status-missing,
   border-left: 4px solid var(--mc-accent);
   break-inside: avoid;
   page-break-inside: avoid;
+  /* Resta sempre attaccato al contesto precedente (la tabella di calcolo),
+     non viene mai spinto su pagina nuova da solo */
+  break-before: avoid;
+  page-break-before: avoid;
 }
 .vp-callout .vp-kicker {
   font-family: var(--mc-sans);
