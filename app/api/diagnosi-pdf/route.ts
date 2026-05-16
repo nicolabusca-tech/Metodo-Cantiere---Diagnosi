@@ -129,6 +129,14 @@ export async function GET(req: Request) {
         vol.querySelectorAll('.diagnosi-cover, .diagnosi-letter').forEach(
           (el) => el.remove()
         )
+        // Rimuovi i diagnosi-page-break orfani che il template metteva fra
+        // cover, lettera e prima sezione: senza piu' cover/lettera quei
+        // page break decorativi generano pagine vuote.
+        let firstChild = vol.firstElementChild
+        while (firstChild && firstChild.classList.contains('diagnosi-page-break')) {
+          firstChild.remove()
+          firstChild = vol.firstElementChild
+        }
         // Inserisci pagina opener distintiva all'inizio del volume
         const info = volumeOpenerInfo[volNum]
         const opener = document.createElement('div')
