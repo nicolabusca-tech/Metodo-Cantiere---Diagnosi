@@ -83,72 +83,73 @@ export default function LoginPage() {
         {/* Pannello sinistro: contesto e orientamento */}
         <section className="order-2 lg:order-1">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Portale Strategico Metodo Cantiere
+            Area clienti Metodo Cantiere
           </p>
           <h1 className="font-serif text-3xl font-bold leading-tight text-neutral-900 sm:text-4xl">
-            Benvenuto nella tua area riservata.
+            Qui dentro c&rsquo;&egrave; il lavoro che facciamo per te.
           </h1>
           <p className="mt-5 text-base leading-relaxed text-neutral-700">
-            Da qui gestisci la tua relazione con Metodo Cantiere: compili il
-            form del prodotto che hai scelto, segui la generazione del report e
-            scarichi il documento finale in PDF.
+            Rispondi alle domande del form, noi mettiamo insieme i numeri, tu
+            ricevi un documento da leggere e scaricare quando vuoi. Niente
+            email da rincorrere, niente passaggi a vuoto: tutto succede da
+            questa pagina.
           </p>
 
           <div className="mt-8 space-y-5">
             <Bullet
               n="A"
-              title="Hai gi&agrave; un account"
-              body="Inserisci email e password nel riquadro a fianco. Ti porta direttamente al tuo prodotto, allo stato in cui l'avevi lasciato."
+              title="Sei gi&agrave; cliente"
+              body="Entri con la tua email qui a fianco e riprendi da dove eri rimasto: form, report, scarico PDF."
             />
             <Bullet
               n="B"
               title="&Egrave; la prima volta che entri"
-              body="Vai su Registrati: creiamo l'account in 2 minuti, poi scegli fra Analisi Lampo (€147, 48 ore) e Diagnosi Strategica (€497, 10 giorni)."
+              body="Crei l&rsquo;account in due minuti. Poi scegli: <strong>Analisi Lampo</strong> per partire subito (€147, ti arriva in 48 ore) o <strong>Diagnosi Strategica</strong> per andare a fondo (€497, ci mettiamo 10 giorni)."
               cta={{ href: '/auth/sign-up', label: 'Crea il tuo account' }}
             />
             <Bullet
               n="C"
-              title="Non ricordi la password"
-              body="Usa il link Hai dimenticato la password sotto al form: ti mandiamo un'email per reimpostarla."
+              title="Password fuori uso"
+              body="Sotto il form trovi il link per resettarla. Ti mandiamo una mail, la rifai in trenta secondi e sei dentro."
             />
           </div>
 
           <p className="mt-10 rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-700">
-            <span className="font-semibold text-neutral-900">Vuoi prima capire i prodotti?</span>{' '}
-            Sul sito{' '}
+            <span className="font-semibold text-neutral-900">Non hai ancora deciso quale prodotto?</span>{' '}
+            Le pagine{' '}
             <a
-              href="https://www.metodocantiere.com"
+              href="https://www.metodocantiere.com/audit/"
               className="font-medium text-primary hover:underline"
               rel="noopener noreferrer"
             >
-              metodocantiere.com
-            </a>{' '}
-            trovi le pagine{' '}
-            <a
-              href="https://www.metodocantiere.com/audit/"
-              className="text-primary hover:underline"
-              rel="noopener noreferrer"
-            >
-              /audit
+              audit
             </a>{' '}
             e{' '}
             <a
               href="https://www.metodocantiere.com/diagnosi/"
+              className="font-medium text-primary hover:underline"
+              rel="noopener noreferrer"
+            >
+              diagnosi
+            </a>{' '}
+            sul sito{' '}
+            <a
+              href="https://www.metodocantiere.com"
               className="text-primary hover:underline"
               rel="noopener noreferrer"
             >
-              /diagnosi
+              metodocantiere.com
             </a>{' '}
-            che descrivono nel dettaglio i due percorsi.
+            ti spiegano in concreto cosa cambia fra i due e qual &egrave; quello giusto per il tuo cantiere.
           </p>
         </section>
 
         {/* Pannello destro: form di login */}
         <section className="order-1 lg:order-2 lg:pt-2">
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-semibold text-neutral-900">Accedi</h2>
+            <h2 className="text-xl font-semibold text-neutral-900">Entra</h2>
             <p className="mt-1 mb-6 text-sm text-neutral-600">
-              Inserisci le tue credenziali per entrare.
+              Email e password. Se ti perdi, sotto trovi i link di servizio.
             </p>
 
             <form onSubmit={handleLogin} className="space-y-4">

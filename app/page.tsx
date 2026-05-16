@@ -73,19 +73,17 @@ export default async function HomePage() {
           <div className="grid items-center gap-12 md:grid-cols-[1.2fr_1fr]">
             <div>
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                Portale Strategico Metodo Cantiere
+                Area clienti Metodo Cantiere
               </p>
               <h1 className="font-serif text-4xl font-bold leading-[1.1] text-neutral-900 sm:text-5xl md:text-6xl">
-                Una fotografia onesta della tua impresa.
+                I numeri della tua impresa, scritti chiari.
                 <br />
-                <span className="text-primary">E la rotta per farla crescere.</span>
+                <span className="text-primary">E le mosse da fare per crescere.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-neutral-700">
-                Due strumenti per i costruttori che vogliono smettere di andare a sentimento e
-                iniziare a decidere con i numeri in mano.
-                Registrati al portale, scegli la relazione che fa per te &mdash; veloce o
-                approfondita &mdash; e ricevi un documento operativo, scritto su misura per la
-                tua azienda.
+                Niente teoria, niente fuffa da consulenti. Tu rispondi alle nostre domande
+                sulla tua impresa, noi ti restituiamo un documento che ti dice come stai e
+                cosa muovere subito. Veloce o approfondito, lo scegli tu.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -99,35 +97,35 @@ export default async function HomePage() {
                   href="#prodotti"
                   className="inline-flex items-center justify-center rounded-lg border border-neutral-300 px-6 py-3 text-base font-semibold text-neutral-800 transition hover:border-primary hover:text-primary"
                 >
-                  Confronta i due prodotti
+                  Vedi i due prodotti
                 </Link>
               </div>
 
               <p className="mt-5 text-sm text-neutral-500">
-                Registrazione gratuita. Paghi solo il prodotto che scegli, una tantum.
+                Registrarti non costa niente. Paghi solo il prodotto che scegli, una volta sola.
               </p>
             </div>
 
             {/* Pannello laterale: come funziona in 3 passi */}
             <aside className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                Come funziona
+                Come funziona, in tre mosse
               </p>
               <ol className="space-y-5">
                 <Step
                   n={1}
-                  title="Crei l'account"
-                  body="Email, password, due dati sull'azienda. Ti bastano 2 minuti."
+                  title="Apri l&rsquo;account"
+                  body="Email, password, due dati sulla tua impresa. Ci metti due minuti."
                 />
                 <Step
                   n={2}
-                  title="Scegli la relazione"
-                  body="Analisi Lampo se vuoi una radiografia in 48 ore. Diagnosi Strategica se vuoi un piano completo in 10 giorni."
+                  title="Scegli il prodotto"
+                  body="Analisi Lampo se vuoi una fotografia veloce (48 ore). Diagnosi Strategica se vuoi un piano serio su cui lavorare (10 giorni)."
                 />
                 <Step
                   n={3}
-                  title="Compili il form e ricevi il documento"
-                  body="Domande mirate sulla tua impresa. Poi il report ti arriva in area riservata, pronto da leggere e scaricare in PDF."
+                  title="Compili il form, ricevi il documento"
+                  body="Domande mirate, niente compitini. Poi il report te lo trovi qui dentro, da leggere a schermo o da scaricare in PDF."
                 />
               </ol>
             </aside>
@@ -143,12 +141,13 @@ export default async function HomePage() {
               I due prodotti
             </p>
             <h2 className="font-serif text-3xl font-bold leading-tight text-neutral-900 sm:text-4xl">
-              Due livelli di profondit&agrave;. Una sola filosofia: dati, non opinioni.
+              Stesso metodo. Due livelli di dettaglio. Scegli in base a quanto vuoi vederci.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-neutral-700">
-              Entrambi i prodotti partono dalle stesse domande di fondo &mdash; chi sei, dove
-              giochi, contro chi giochi &mdash; ma rispondono con un livello di dettaglio
-              diverso. Scegli in base a quanto vuoi scendere.
+              Tutti e due partono dalle stesse domande &mdash; chi sei, dove ti muovi,
+              contro chi giochi sul tuo territorio. Cambia solo quanto a fondo scaviamo nelle
+              risposte. Una panoramica per partire, oppure una mappa completa per costruire il
+              prossimo anno.
             </p>
           </div>
 
@@ -157,50 +156,50 @@ export default async function HomePage() {
               tag="Veloce"
               tagTone="neutral"
               title="Analisi Lampo"
-              subtitle="La radiografia rapida della tua impresa digitale"
+              subtitle="Una fotografia rapida della tua impresa, per capire da dove partire."
               price="&euro;147"
               priceNote="una tantum"
               timeLabel="48 ore"
-              timeNote="dall'invio del form"
+              timeNote="da quando finisci il form"
               features={[
-                'Punteggio sintetico su brand, marketing e presenza online',
-                'Tre quick win operativi da mettere a terra subito',
-                'Confronto rapido con un competitor diretto',
-                'PDF scaricabile, scritto in italiano e in tono operativo',
+                'Voto sintetico su brand, marketing e presenza online',
+                'Tre mosse pronte da mettere in cantiere subito',
+                'Confronto al volo con un tuo concorrente diretto',
+                'PDF da scaricare, scritto come parlerebbe un collega, non un consulente',
               ]}
               ctaLabel="Inizia con l'Analisi Lampo"
               ctaHref="/auth/sign-up"
-              footnote="Ideale se vuoi capire da dove partire senza impegnarti su un percorso lungo."
+              footnote="Va bene se vuoi un primo colpo d&rsquo;occhio prima di impegnarti su un percorso lungo."
             />
 
             <ProductCard
               tag="Approfondita"
               tagTone="primary"
               title="Diagnosi Strategica"
-              subtitle="Il piano di crescita digitale costruito sulla tua azienda"
+              subtitle="Il piano di crescita cucito addosso alla tua impresa."
               price="&euro;497"
               priceNote="una tantum"
               timeLabel="10 giorni"
-              timeNote="con ricerca dedicata sui competitor"
+              timeNote="con ricerca dedicata sui tuoi concorrenti locali"
               features={[
-                'Tre volumi: posizionamento, mercato e competitor, roadmap operativa',
-                'Analisi approfondita del tuo posizionamento rispetto al mercato locale',
-                'Raccomandazioni step-by-step da eseguire nei mesi successivi',
-                'Documento editoriale (decine di pagine) impaginato in qualit&agrave; PDF premium',
+                'Tre volumi: dove sei oggi, contro chi giochi, cosa fare nei prossimi mesi',
+                'Studio del tuo posizionamento sul mercato locale, zona per zona',
+                'Roadmap operativa step-by-step da seguire nei mesi successivi',
+                'Documento editoriale (decine di pagine) impaginato come una rivista',
               ]}
               ctaLabel="Scegli la Diagnosi Strategica"
               ctaHref="/auth/sign-up"
-              footnote="Ideale se vuoi un piano serio su cui costruire il prossimo anno di lavoro."
+              footnote="Va bene se vuoi un piano serio su cui costruire il prossimo anno di lavoro."
             />
           </div>
 
           {/* Reassurance line */}
           <div className="mt-12 rounded-xl border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-700 sm:p-8">
             <p className="leading-relaxed">
-              <span className="font-semibold text-neutral-900">Una nota su come lavoriamo.</span>{' '}
-              I documenti non sono template riciclati: ogni report viene generato sui dati che
-              ci dai tu nel form, incrociati con la nostra metodologia. Per questo serve un
-              attimo di tempo, e per questo restano utili a distanza di mesi.
+              <span className="font-semibold text-neutral-900">Come lavoriamo.</span>{' '}
+              Niente report fotocopia: ogni documento parte dai dati che ci dai tu, incrociati
+              con il nostro metodo. Per questo qualche giorno serve, e per questo lo rileggi
+              ancora con utilit&agrave; sei mesi dopo.
             </p>
           </div>
 

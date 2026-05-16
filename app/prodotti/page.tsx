@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getUtentiAnalisiLampo, getFormStatus, hasDiagnosiEnabled } from '@/app/actions/database'
@@ -33,6 +34,19 @@ export default async function ProdottiPage() {
 
   const userId = user.id
   const customerEmail = user.email || ''
+
+  // Se l'utente loggato e' admin, mostriamo in cima un nastro che gli
+  // permette di tornare al pannello /setup senza dover digitare l'URL.
+  // Capita spesso di voler controllare la vista cliente e poi tornare
+  // in regia.
+  const admin = createAdminClient()
+  const { data: roleRow } = await admin
+    .from('utenti')
+    .select('is_admin')
+    .eq('id', userId)
+    .maybeSingle()
+  const isAdmin = !!roleRow?.is_admin
+
   let utentiData = null
   let formStatusAnalisi: string | null = null
   let formStatusDiagnosi: string | null = null
@@ -78,8 +92,25 @@ export default async function ProdottiPage() {
   const linkDiagnosi = getCardLink(stateDiagnosi, formLinkDiagnosi, '/payment-diagnosi-strategica', '/diagnosi/diagnosi-strategica')
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-neutral-50">
+      {isAdmin && (
+        <div className="border-b border-amber-300 bg-amber-50">
+          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-2 px-4 py-3 sm:flex-row sm:items-center sm:px-6">
+            <p className="text-sm text-amber-900">
+              <span className="font-semibold">Sei loggato come admin.</span>{' '}
+              Stai vedendo la pagina come un cliente normale.
+            </p>
+            <Link
+              href="/setup"
+              className="inline-flex items-center gap-2 rounded-md bg-amber-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800"
+            >
+              &larr; Torna al pannello admin
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="flex flex-col items-center justify-center mb-12">
           <Image
             src="/logo-metodo-cantiere.png"
