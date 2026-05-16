@@ -34,7 +34,13 @@ export type DiagnosiDisplayRow = {
  */
 export function displayDiagnosiContent(row: DiagnosiDisplayRow): string {
   if (row.tipo === 'analisi_lampo') {
-    return row.diagnosi ?? ''
+    const md = (row.diagnosi ?? '').trim()
+    if (!md) return ''
+    // Lampo arriva in markdown puro: converti qui e wrappa in lampo-document
+    // cosi' viewer e route PDF possono applicare le trasformazioni editoriali
+    // dedicate (cover hero, area card, score banner, action callout).
+    const html = isLikelyHtmlFragment(md) ? md : markdownToHtml(md)
+    return `<div class="lampo-document">${html}</div>`
   }
 
   const vols = [row.volume_1 ?? '', row.volume_2 ?? '', row.volume_3 ?? '']

@@ -2112,3 +2112,449 @@ td .status-missing,
   color: var(--mc-ink-mute);
   font-weight: 400;
 }
+
+/* =========================================================================
+   ANALISI LAMPO V1 — Sistema editoriale dedicato
+   Stessa scuola tipografica della Diagnosi (Source Serif 4, Inter, palette
+   primary), formato compatto. Primitive: cover hero, score banner,
+   info-callout, area-card (le 6 aree con badge SVG semaforo), scorecard
+   table, action-callout (Azione diretta).
+   ========================================================================= */
+
+.lampo-document {
+  font-family: var(--font-sans);
+  color: var(--mc-ink, #1a1a1a);
+  font-size: 11pt;
+  line-height: 1.6;
+  max-width: 100%;
+}
+
+.lampo-document h1,
+.lampo-document h2,
+.lampo-document h3 {
+  font-family: var(--font-serif);
+  color: var(--mc-ink, #111);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.lampo-document h2 {
+  font-size: 1.6rem;
+  margin: 1.8rem 0 1rem;
+  border-bottom: 1px solid #e7e3dd;
+  padding-bottom: 0.5rem;
+}
+
+.lampo-document p {
+  margin: 0.6rem 0 0.9rem;
+}
+
+.lampo-document hr {
+  border: none;
+  border-top: 1px solid #d9d4cc;
+  margin: 1.4rem 0;
+}
+
+/* ---------- Cover hero ---------- */
+.lampo-cover-hero {
+  position: relative;
+  min-height: 95vh;
+  padding: 2.5rem 2.5rem 2rem;
+  background: #faf8f4;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  break-after: page;
+  page-break-after: always;
+}
+
+.lampo-cover-hero .lch-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #c9c2b6;
+  padding-bottom: 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #4a443a;
+}
+
+.lampo-cover-hero .lch-brand {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.lampo-cover-hero .lch-watermark {
+  position: absolute;
+  right: 1rem;
+  bottom: 5.5rem;
+  font-family: var(--font-serif);
+  font-size: 28rem;
+  font-weight: 200;
+  color: rgba(232, 84, 23, 0.08);
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.lampo-cover-hero .lch-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 0 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.lampo-cover-hero .lch-title {
+  font-family: var(--font-serif);
+  font-size: 5.4rem;
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: #111;
+  margin: 0;
+}
+
+.lampo-cover-hero .lch-subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: #4a443a;
+  margin: 1rem 0 0;
+  max-width: 32rem;
+}
+
+.lampo-cover-hero .lch-rule {
+  width: 6rem;
+  border: none;
+  border-top: 3px solid #e85417;
+  margin: 1.6rem 0 0;
+}
+
+.lampo-cover-hero .lch-dedicato {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 1.8rem;
+  padding: 1.2rem 0;
+  border-top: 1px solid #c9c2b6;
+  border-bottom: 1px solid #c9c2b6;
+}
+
+.lampo-cover-hero .lch-dedicato-label {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #e85417;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.lampo-cover-hero .lch-dedicato-name {
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.1;
+}
+
+.lampo-cover-hero .lch-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  position: relative;
+  z-index: 1;
+  padding-top: 1rem;
+  border-top: 1px solid #c9c2b6;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+}
+
+.lampo-cover-hero .lch-footer-meta {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #807969;
+  font-weight: 600;
+}
+
+.lampo-cover-hero .lch-footer-author {
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-top: 0.15rem;
+}
+
+.lampo-cover-hero .lch-motto {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #4a443a;
+  text-align: right;
+  max-width: 18rem;
+}
+
+/* ---------- Score banner: il punteggio commerciale d'apertura ---------- */
+.lampo-score-banner {
+  margin: 2rem 0;
+  padding: 1.6rem 1.8rem;
+  border-radius: 10px;
+  border: 1px solid #e0d9cc;
+  background: #faf8f4;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.lampo-score-banner--red { border-left: 6px solid #d63b3b; }
+.lampo-score-banner--yellow { border-left: 6px solid #e69100; }
+.lampo-score-banner--green { border-left: 6px solid #2f9d4a; }
+
+.lampo-score-banner .lsb-kicker {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #807969;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.lampo-score-banner .lsb-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+
+.lampo-score-banner .lsb-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.lampo-score-banner .lsb-headline {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.2;
+}
+
+.lampo-score-banner .lsb-desc {
+  font-size: 0.95rem;
+  color: #2a2620;
+  line-height: 1.6;
+}
+
+.lampo-score-banner .lsb-desc p { margin: 0; }
+
+/* ---------- Info callout: blockquote "Come leggere questo report" ---------- */
+.lampo-document blockquote.lampo-info-callout {
+  background: #fff9eb;
+  border: 1px solid #f0e3b6;
+  border-left: 4px solid #e69100;
+  border-radius: 8px;
+  padding: 0.9rem 1.2rem;
+  margin: 1.4rem 0;
+  font-size: 0.92rem;
+  color: #4a3f1f;
+}
+
+.lampo-document blockquote.lampo-info-callout h3 {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e69100;
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+
+.lampo-document blockquote.lampo-info-callout p {
+  margin: 0.3rem 0;
+}
+
+/* ---------- Area card: header con badge lettera + status icon ---------- */
+.lampo-area-card {
+  position: relative;
+  margin: 1.8rem 0;
+  border: 1px solid #e0d9cc;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  break-inside: avoid-page;
+  page-break-inside: avoid;
+}
+
+.lampo-area-card .lac-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.4rem;
+  background: #faf8f4;
+  border-bottom: 1px solid #e0d9cc;
+}
+
+.lampo-area-card--red .lac-header { border-top: 4px solid #d63b3b; }
+.lampo-area-card--yellow .lac-header { border-top: 4px solid #e69100; }
+.lampo-area-card--green .lac-header { border-top: 4px solid #2f9d4a; }
+
+.lampo-area-card .lac-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: #1a1a1a;
+  color: #fff;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.lampo-area-card .lac-letter {
+  line-height: 1;
+}
+
+.lampo-area-card .lac-status {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  display: inline-flex;
+  background: #fff;
+  border-radius: 50%;
+  padding: 1px;
+}
+
+.lampo-area-card .lac-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.lampo-area-card .lac-subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: #4a443a;
+  margin: 0.25rem 0 0;
+  font-style: italic;
+}
+
+.lampo-area-card .lac-body {
+  padding: 1.2rem 1.4rem;
+}
+
+.lampo-area-card .lac-body > :first-child { margin-top: 0; }
+.lampo-area-card .lac-body > :last-child { margin-bottom: 0; }
+
+/* ---------- Scorecard table dentro area card ---------- */
+.lampo-document .lampo-scorecard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.2rem;
+  font-size: 0.92rem;
+}
+
+.lampo-document .lampo-scorecard-table th {
+  background: #f5f1e9;
+  color: #1a1a1a;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-align: left;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 2px solid #d9d4cc;
+}
+
+.lampo-document .lampo-scorecard-table td {
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid #ebe6dd;
+  vertical-align: top;
+}
+
+.lampo-document .lampo-scorecard-table td:nth-child(2) {
+  font-weight: 700;
+  color: #111;
+}
+
+.lampo-document .lampo-scorecard-table td:nth-child(3) {
+  color: #4a443a;
+  font-style: italic;
+}
+
+.lampo-document .lampo-scorecard-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ---------- Action callout: Azione diretta ---------- */
+.lampo-document blockquote.lampo-action-callout {
+  position: relative;
+  background: linear-gradient(180deg, #fff5ec 0%, #ffeedd 100%);
+  border: none;
+  border-left: 4px solid #e85417;
+  border-radius: 0 10px 10px 0;
+  padding: 1rem 1.2rem 1rem 3.5rem;
+  margin: 1.2rem 0 0.5rem;
+  color: #2a2620;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  break-inside: avoid;
+}
+
+.lampo-document blockquote.lampo-action-callout::before {
+  content: "";
+  position: absolute;
+  left: 0.9rem;
+  top: 1.1rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  background: #e85417;
+  border-radius: 50%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><path d='M13 2L4 14h6l-1 8 9-12h-6l1-8z' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 1.05rem;
+}
+
+.lampo-document blockquote.lampo-action-callout p {
+  margin: 0.1rem 0;
+}
+
+.lampo-document blockquote.lampo-action-callout strong {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #e85417;
+  display: inline-block;
+  margin-right: 0.4rem;
+}
+
+/* ---------- Print / PDF rules ---------- */
+@media print {
+  .lampo-document { font-size: 10.5pt; }
+  .lampo-cover-hero { min-height: 100vh; padding: 22mm 24mm 18mm; }
+  .lampo-cover-hero .lch-watermark { font-size: 32rem; bottom: 18mm; right: 12mm; }
+  .lampo-area-card,
+  .lampo-score-banner,
+  .lampo-document blockquote.lampo-action-callout {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .lampo-document h2,
+  .lampo-document h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+}

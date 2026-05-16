@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect, useRef } from 'react'
 import { contentToSafeHtml } from '@/lib/diagnosi-sanitize'
-import { applyDiagnosiTransforms } from '@/lib/diagnosi-transforms'
+import { applyDiagnosiTransforms, applyLampoTransforms } from '@/lib/diagnosi-transforms'
 
 interface DiagnosiViewerProps {
   content: string
@@ -12,24 +12,27 @@ interface DiagnosiViewerProps {
 export function DiagnosiViewer({ content, className = '' }: DiagnosiViewerProps) {
   const safeHtml = useMemo(() => contentToSafeHtml(content), [content])
 
-  const isStructuredDocument = safeHtml.includes('diagnosi-document')
+  const isDiagnosi = safeHtml.includes('diagnosi-document')
+  const isLampo = safeHtml.includes('lampo-document')
+  const isStructuredDocument = isDiagnosi || isLampo
 
   const containerRef = useRef<HTMLElement | null>(null)
 
   // Allinea il rendering a video con il PDF: applica le stesse trasformazioni
-  // grafiche (volume-opener, donut chart, VP-callout XL, pull-quote XL,
-  // running head dinamico, widget peso, strip ®) dopo che React ha montato
-  // l'HTML strutturato. removeOldFooter:true anche a video: a browser non
-  // c'e' il concetto di "pagine" (e' uno scroll continuo), quindi un footer
-  // ripetuto con "Pag. N" che riparte da 1 ogni volume sarebbe solo
-  // un'incoerenza rumorosa rispetto al PDF. Il documento diventa un flusso
-  // continuo stile libro digitale.
+  // grafiche dopo che React ha montato l'HTML. Per la Diagnosi attiviamo le
+  // trasformazioni dedicate (cover hero, volume opener, donut chart, ecc.),
+  // per il Lampo quelle dedicate (cover hero L, area card, score banner,
+  // action callout, badge SVG semaforo).
   useEffect(() => {
     if (!isStructuredDocument) return
     const el = containerRef.current
     if (!el) return
-    applyDiagnosiTransforms(el, { removeOldFooter: true })
-  }, [isStructuredDocument, safeHtml])
+    if (isLampo) {
+      applyLampoTransforms(el)
+    } else {
+      applyDiagnosiTransforms(el, { removeOldFooter: true })
+    }
+  }, [isStructuredDocument, isLampo, safeHtml])
 
   if (isStructuredDocument) {
     return (

@@ -51,9 +51,14 @@ export async function GET(req: Request) {
 
     await page.goto(printUrl, { waitUntil: 'domcontentloaded' })
 
-    // Aspetta che React monti il documento completo (tutti i volumi se strategica)
+    // Aspetta che React monti il documento (Diagnosi: tutti i volumi;
+    // Lampo: il wrapper .lampo-document con corpo significativo).
     await page.waitForFunction(
       () => {
+        const lampo = document.querySelector('.lampo-document')
+        if (lampo) {
+          return (lampo.textContent || '').length > 200
+        }
         const doc = document.querySelector('.diagnosi-document')
         if (!doc) return false
         if (doc.classList.contains('diagnosi-strategica-unified')) {
@@ -64,13 +69,31 @@ export async function GET(req: Request) {
       { timeout: 30000 }
     )
 
-    // Aspetta fonts e network idle finale
+    // Aspetta fonts e che React esegua gli useEffect (applyLampoTransforms /
+    // applyDiagnosiTransforms vengono applicati dal DiagnosiViewer dopo il
+    // mount; servono pochi ms ma andiamo a colpo sicuro).
     await page.evaluate(async () => {
       if (document.fonts && document.fonts.ready) {
         await document.fonts.ready
       }
     })
-    await new Promise((r) => setTimeout(r, 500))
+    await new Promise((r) => setTimeout(r, 800))
+
+    // Verifica che almeno una trasformazione editoriale sia partita; se per
+    // qualche motivo il useEffect non e' scattato in tempo, ritento.
+    const transformed = await page.evaluate(() => {
+      const b = document.body
+      return (
+        b.getAttribute('data-diagnosi-transformed') === '1' ||
+        b.getAttribute('data-lampo-transformed') === '1' ||
+        document.querySelector('[data-diagnosi-transformed="1"], [data-lampo-transformed="1"]') !== null ||
+        document.querySelector('.lampo-cover-hero, .diagnosi-cover-hero') !== null
+      )
+    })
+    if (!transformed) {
+      // Forza un altro tick di React
+      await new Promise((r) => setTimeout(r, 500))
+    }
 
     // Trasformazioni grafiche editoriali in print-mode.
     // NOTA: il body della funzione e' duplicato qui per evitare che il

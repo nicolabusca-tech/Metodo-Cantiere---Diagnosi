@@ -293,3 +293,308 @@ export function applyDiagnosiTransforms(
     markerHost.setAttribute('data-diagnosi-transformed', '1')
   }
 }
+
+/**
+ * Trasformazioni grafiche per l'Analisi Lampo.
+ *
+ * L'Analisi Lampo arriva da n8n in markdown puro, viene convertita in HTML
+ * da marked, e poi wrappata in <div class="lampo-document">. Qui sopra
+ * applichiamo il livello editoriale: cover hero, score banner, card delle
+ * sei aree con badge SVG semaforo, callout "Azione diretta", scorecard
+ * table. Stessa scuola della Diagnosi, formato pi&ugrave; compatto.
+ *
+ * Auto-contenuta e idempotente per gli stessi motivi di applyDiagnosiTransforms.
+ */
+export function applyLampoTransforms(scope: Document | HTMLElement): void {
+  if (!scope) return
+  const root: Element | Document = (scope as Document).body ? (scope as Document) : (scope as HTMLElement)
+  const container: ParentNode = (root as Document).body ? (root as Document).body : (root as HTMLElement)
+  if (!container) return
+
+  const markerHost = (container as HTMLElement).setAttribute ? (container as HTMLElement) : null
+  if (markerHost && markerHost.getAttribute('data-lampo-transformed') === '1') return
+
+  const ownerDoc: Document =
+    (root as Document).body
+      ? (root as Document)
+      : (root as Element).ownerDocument || document
+
+  const lampoDoc = container.querySelector('.lampo-document') as HTMLElement | null
+  if (!lampoDoc) return
+
+  // SVG per i badge semaforo: cerchio pieno con bordo, dimensioni controllate
+  // (le emoji native in Puppeteer/Chromium escono male e con baseline ballerina).
+  const statusSvg = (color: string): string =>
+    '<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">' +
+      '<circle cx="10" cy="10" r="7.5" fill="' + color + '" stroke="#1a1a1a" stroke-opacity="0.18" stroke-width="0.8" />' +
+    '</svg>'
+
+  const STATUS_COLORS: Record<string, string> = {
+    red: '#d63b3b',
+    yellow: '#e69100',
+    orange: '#e69100',
+    green: '#2f9d4a',
+  }
+
+  const detectStatus = (txt: string): 'red' | 'yellow' | 'green' | null => {
+    if (txt.indexOf('🔴') >= 0) return 'red'
+    if (txt.indexOf('🟠') >= 0 || txt.indexOf('🟡') >= 0) return 'yellow'
+    if (txt.indexOf('🟢') >= 0) return 'green'
+    return null
+  }
+
+  const stripStatusEmoji = (txt: string): string =>
+    txt.replace(/[\u{1F534}\u{1F7E0}\u{1F7E1}\u{1F7E2}]/gu, '').trim()
+
+  // 1. Cover hero
+  // Pattern markdown: H1 "ANALISI LAMPO..." + H2 nome azienda + paragrafo
+  // con "Preparato da" + "Data" + "Documento riservato" + <hr> + paragrafo
+  // italic motto + <hr>. Lo identifico cercando il primo h1 del documento.
+  const firstH1 = lampoDoc.querySelector('h1') as HTMLHeadingElement | null
+  if (firstH1 && !firstH1.dataset.lampoHero) {
+    const titleTxt = (firstH1.textContent || 'Analisi Lampo').replace(/®|®/g, '').trim()
+    // Cerco h2 successivo per nome azienda
+    let azienda = ''
+    let metaPara: HTMLElement | null = null
+    let mottoPara: HTMLElement | null = null
+    let cursor: Element | null = firstH1.nextElementSibling
+    const toRemove: Element[] = []
+    let mottoFound = false
+    while (cursor) {
+      const tag = cursor.tagName
+      const txt = (cursor.textContent || '').trim()
+      if (tag === 'H2' && !azienda) {
+        azienda = txt
+        toRemove.push(cursor)
+        cursor = cursor.nextElementSibling
+        continue
+      }
+      if (tag === 'P' && !metaPara && /preparato da|documento riservato|data\s*:/i.test(txt)) {
+        metaPara = cursor as HTMLElement
+        toRemove.push(cursor)
+        cursor = cursor.nextElementSibling
+        continue
+      }
+      if (tag === 'HR') {
+        toRemove.push(cursor)
+        cursor = cursor.nextElementSibling
+        continue
+      }
+      if (tag === 'P' && !mottoFound) {
+        // Il motto e' un paragrafo italic centrato
+        if (cursor.querySelector('em') || /^["“].*["”]$/.test(txt)) {
+          mottoPara = cursor as HTMLElement
+          toRemove.push(cursor)
+          mottoFound = true
+          cursor = cursor.nextElementSibling
+          continue
+        }
+      }
+      break
+    }
+
+    // Estraggo meta: "Preparato da: X" + "Data: Y" possono essere su righe
+    // separate dentro lo stesso <p>.
+    let redatto = 'Nicola Busca — Metodo Cantiere'
+    let dataTxt = ''
+    if (metaPara) {
+      const m1 = (metaPara.textContent || '').match(/preparato da\s*:\s*([^\n]+?)(?:\s*\n|$|data)/i)
+      if (m1) redatto = m1[1].trim().replace(/®|®/g, '').trim()
+      const m2 = (metaPara.textContent || '').match(/data\s*:\s*([^\n]+?)(?:\s*\n|$|documento)/i)
+      if (m2) dataTxt = m2[1].trim()
+    }
+
+    const mottoTxt = mottoPara
+      ? (mottoPara.textContent || '').replace(/^["“]|["”]$/g, '').trim()
+      : 'Dal contatto al contratto, passo passo.'
+
+    const kicker = 'Analisi Lampo' + (dataTxt ? ' · ' + dataTxt : '')
+
+    const hero = ownerDoc.createElement('div')
+    hero.className = 'lampo-cover-hero'
+    hero.dataset.lampoHero = '1'
+    hero.innerHTML =
+      '<div class="lch-top">' +
+        '<div class="lch-brand">Metodo Cantiere</div>' +
+        '<div class="lch-kicker">' + kicker + '</div>' +
+      '</div>' +
+      '<div class="lch-watermark" aria-hidden="true">L</div>' +
+      '<div class="lch-center">' +
+        '<h1 class="lch-title">Analisi Lampo</h1>' +
+        '<p class="lch-subtitle">La radiografia rapida della tua impresa</p>' +
+        '<hr class="lch-rule" />' +
+      '</div>' +
+      '<div class="lch-dedicato">' +
+        '<div class="lch-dedicato-label">Dedicato a</div>' +
+        '<div class="lch-dedicato-name">' + (azienda || titleTxt) + '</div>' +
+      '</div>' +
+      '<div class="lch-footer">' +
+        '<div class="lch-footer-left">' +
+          '<div class="lch-footer-meta">Redatto da</div>' +
+          '<div class="lch-footer-author">' + redatto + '</div>' +
+        '</div>' +
+        '<div class="lch-motto">' + '“' + mottoTxt + '”' + '</div>' +
+      '</div>'
+
+    firstH1.parentNode?.insertBefore(hero, firstH1)
+    firstH1.remove()
+    toRemove.forEach((el) => el.remove())
+  }
+
+  // 2. Strip ® e residui ASCII art dai text nodes (idem Diagnosi)
+  const walker = ownerDoc.createTreeWalker(lampoDoc as Node, NodeFilter.SHOW_TEXT)
+  const toFix: Text[] = []
+  let n: Node | null
+  while ((n = walker.nextNode())) {
+    const t = n as Text
+    if (t.nodeValue && /[®█░■□▒▓]/u.test(t.nodeValue)) toFix.push(t)
+  }
+  toFix.forEach((t) => {
+    if (t.nodeValue) t.nodeValue = t.nodeValue.replace(/®/g, '').replace(/[█░■□▒▓]/gu, '')
+  })
+
+  // 3. Score banner: H2 "Il tuo livello commerciale" + H1 successivo dentro corpo
+  //    Quel pattern markdown e' anomalo (H1 in mezzo al body) ma e' come arriva.
+  Array.from(lampoDoc.querySelectorAll('h2')).forEach((h2) => {
+    const el = h2 as HTMLHeadingElement
+    if (el.dataset.lampoBanner) return
+    const txt = (el.textContent || '').toLowerCase()
+    if (!/livello\s+commerciale|tuo\s+livello/.test(txt)) return
+    const next = el.nextElementSibling
+    if (!next || next.tagName !== 'H1') return
+    const scoreTxt = (next.textContent || '').trim()
+    const status = detectStatus(scoreTxt) || 'red'
+    const clean = stripStatusEmoji(scoreTxt)
+    // Cerco il primo paragrafo successivo come descrizione
+    let desc: HTMLElement | null = null
+    let after: Element | null = next.nextElementSibling
+    while (after) {
+      if (after.tagName === 'P') { desc = after as HTMLElement; break }
+      if (after.tagName === 'H1' || after.tagName === 'H2' || after.tagName === 'H3') break
+      after = after.nextElementSibling
+    }
+    const banner = ownerDoc.createElement('section')
+    banner.className = 'lampo-score-banner lampo-score-banner--' + status
+    banner.dataset.lampoBanner = '1'
+    banner.innerHTML =
+      '<div class="lsb-kicker">' + (el.textContent || '').trim() + '</div>' +
+      '<div class="lsb-row">' +
+        '<div class="lsb-icon">' + statusSvg(STATUS_COLORS[status]) + '</div>' +
+        '<div class="lsb-headline">' + clean + '</div>' +
+      '</div>' +
+      (desc ? '<div class="lsb-desc">' + desc.innerHTML + '</div>' : '')
+    el.parentNode?.insertBefore(banner, el)
+    el.remove()
+    next.remove()
+    if (desc && desc.parentNode) desc.remove()
+  })
+
+  // 4. Info callout "Come leggere questo report": blockquote che contiene un h3
+  //    con quel testo. Wrap in classe dedicata.
+  Array.from(lampoDoc.querySelectorAll('blockquote')).forEach((bq) => {
+    const el = bq as HTMLElement
+    if (el.dataset.lampoInfo) return
+    const h3 = el.querySelector('h3')
+    if (!h3) return
+    if (!/come\s+leggere/i.test(h3.textContent || '')) return
+    el.classList.add('lampo-info-callout')
+    el.dataset.lampoInfo = '1'
+  })
+
+  // 5. Action callout: blockquote che inizia con 💡 e contiene "Azione diretta"
+  Array.from(lampoDoc.querySelectorAll('blockquote')).forEach((bq) => {
+    const el = bq as HTMLElement
+    if (el.dataset.lampoAction) return
+    const txt = (el.textContent || '').trim()
+    if (!/azione\s+diretta/i.test(txt)) return
+    el.classList.add('lampo-action-callout')
+    el.dataset.lampoAction = '1'
+    // Rimuovo l'emoji 💡 dal testo, la mettiamo via CSS come icona dedicata
+    const w = ownerDoc.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+    let tn: Node | null
+    const fixes: Text[] = []
+    while ((tn = w.nextNode())) {
+      const t = tn as Text
+      if (t.nodeValue && t.nodeValue.indexOf('💡') >= 0) fixes.push(t)
+    }
+    fixes.forEach((t) => { if (t.nodeValue) t.nodeValue = t.nodeValue.replace(/💡\s*/g, '') })
+  })
+
+  // 6. Scorecard table: tabelle 3 col con header "Voce | Situazione | Standard"
+  Array.from(lampoDoc.querySelectorAll('table')).forEach((tbl) => {
+    const headers = Array.from(tbl.querySelectorAll('thead th')).map(
+      (th) => (th.textContent || '').trim().toLowerCase()
+    )
+    const isScore = headers.length === 3 && headers[0].indexOf('voce') >= 0
+    if (isScore) (tbl as HTMLElement).classList.add('lampo-scorecard-table')
+    // Tabelle corte non si spezzano
+    if (tbl.querySelectorAll('tr').length <= 7) {
+      ;(tbl as HTMLElement).style.breakInside = 'avoid'
+      ;(tbl as HTMLElement).style.pageBreakInside = 'avoid'
+    }
+  })
+
+  // 7. Area card: ogni h3 che inizia con emoji semaforo + lettera. + nome area
+  //    diventa l'apertura di una <section class="lampo-area-card"> che ingloba
+  //    tutto fino al prossimo h3/h2 o fine documento.
+  const areaH3s = Array.from(lampoDoc.querySelectorAll('h3')).filter((h3) => {
+    const t = (h3.textContent || '').trim()
+    return /^[\u{1F534}\u{1F7E0}\u{1F7E1}\u{1F7E2}]\s*[A-Z]\.\s/u.test(t)
+  })
+  areaH3s.forEach((h3) => {
+    const el = h3 as HTMLHeadingElement
+    if (el.dataset.lampoArea) return
+    const status = detectStatus(el.textContent || '') || 'yellow'
+    const clean = stripStatusEmoji(el.textContent || '')
+    // Estraggo lettera area e titolo
+    const m = clean.match(/^([A-Z])\.\s*(.+?)(?:\s*—\s*(.+))?$/)
+    const lettera = m ? m[1] : ''
+    const nome = m ? m[2].trim() : clean
+    const sottotitolo = m && m[3] ? m[3].trim() : ''
+
+    const card = ownerDoc.createElement('section')
+    card.className = 'lampo-area-card lampo-area-card--' + status
+    card.dataset.lampoArea = '1'
+    const headerEl = ownerDoc.createElement('header')
+    headerEl.className = 'lac-header'
+    headerEl.innerHTML =
+      '<div class="lac-badge">' +
+        '<span class="lac-letter">' + lettera + '</span>' +
+        '<span class="lac-status">' + statusSvg(STATUS_COLORS[status]) + '</span>' +
+      '</div>' +
+      '<div class="lac-title-wrap">' +
+        '<h3 class="lac-title">' + nome + '</h3>' +
+        (sottotitolo ? '<p class="lac-subtitle">' + sottotitolo + '</p>' : '') +
+      '</div>'
+
+    // Inserisco la card al posto dell'h3, poi sposto dentro tutti i sibling
+    // fino al prossimo h3 o h2 o <hr>.
+    el.parentNode?.insertBefore(card, el)
+    card.appendChild(headerEl)
+    const body = ownerDoc.createElement('div')
+    body.className = 'lac-body'
+    card.appendChild(body)
+
+    let cursor: Element | null = el
+    const toMove: Element[] = []
+    toMove.push(el)
+    let nxt = el.nextElementSibling
+    while (nxt) {
+      const tag = nxt.tagName
+      if (tag === 'H3' || tag === 'H2') break
+      if (tag === 'HR') { toMove.push(nxt); break }
+      toMove.push(nxt)
+      nxt = nxt.nextElementSibling
+    }
+    // L'h3 originale lo butto, ho gia' il titolo nell'header card
+    el.remove()
+    toMove.shift()
+    toMove.forEach((node) => {
+      if (node.tagName === 'HR') { node.remove(); return }
+      body.appendChild(node)
+    })
+  })
+
+  // 8. Mark wrapper come trasformato
+  if (markerHost) markerHost.setAttribute('data-lampo-transformed', '1')
+}
