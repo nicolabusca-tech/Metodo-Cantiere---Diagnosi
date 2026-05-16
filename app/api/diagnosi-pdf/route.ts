@@ -92,6 +92,61 @@ export async function GET(req: Request) {
         '3': 'Volume III — Il Percorso',
       }
 
+      // 0. Cover hero per Volume I: sostituisce la cover originale con
+      //    una versione editoriale d'impatto a tutta pagina.
+      const vol1 = document.querySelector('[data-volume="1"]') as HTMLElement | null
+      const cov = vol1
+        ? (vol1.querySelector('.diagnosi-cover') as HTMLElement | null)
+        : (document.querySelector('.diagnosi-cover') as HTMLElement | null)
+      if (cov && !cov.dataset.heroApplied) {
+        const meta: Record<string, string> = {}
+        cov.querySelectorAll('.cover-meta-row').forEach((row) => {
+          const labelEl = row.querySelector('.cover-meta-label')
+          const labelTxt = ((labelEl?.textContent || '').replace(':', '').trim().toLowerCase())
+          const rawTxt = (row.textContent || '').trim()
+          const valueTxt = labelEl
+            ? rawTxt.replace(labelEl.textContent || '', '').replace(/^:?\s*/, '').trim()
+            : rawTxt
+          if (labelTxt && valueTxt) meta[labelTxt] = valueTxt
+        })
+        const titleTxt = (cov.querySelector('.cover-title')?.textContent || 'La Fotografia').trim()
+        const subtitleTxt = (cov.querySelector('.cover-subtitle')?.textContent || '').trim()
+        const azienda = meta['azienda'] || ''
+        const settore = meta['settore'] || ''
+        const area = meta['area'] || ''
+        const data = meta['data'] || ''
+        const redatto = meta['redatto da'] || 'Nicola Busca — Metodo Cantiere'
+        const kicker = 'Diagnosi Strategica · Volume I di III' + (data ? ' · ' + data : '')
+        const hero = document.createElement('div')
+        hero.className = 'diagnosi-cover-hero'
+        hero.dataset.heroApplied = '1'
+        hero.innerHTML =
+          '<div class="ch-top">' +
+            '<div class="ch-brand">Metodo Cantiere</div>' +
+            '<div class="ch-kicker">' + kicker + '</div>' +
+          '</div>' +
+          '<div class="ch-center">' +
+            '<h1 class="ch-title">' + titleTxt + '</h1>' +
+            (subtitleTxt ? '<p class="ch-subtitle">' + subtitleTxt + '</p>' : '') +
+            '<hr class="ch-rule" />' +
+          '</div>' +
+          '<div class="ch-dedicato">' +
+            '<div class="ch-dedicato-label">Dedicato a</div>' +
+            '<div class="ch-dedicato-name">' + (azienda || '—') + '</div>' +
+            (settore || area
+              ? '<div class="ch-dedicato-sub">' + [settore, area].filter(Boolean).join(' · ') + '</div>'
+              : '') +
+          '</div>' +
+          '<div class="ch-footer">' +
+            '<div class="ch-footer-left">' +
+              '<div class="ch-footer-meta">Redatto da</div>' +
+              '<div class="ch-footer-author">' + redatto + '</div>' +
+            '</div>' +
+            '<div class="ch-motto">' + '“Dal contatto al contratto, passo passo.”' + '</div>' +
+          '</div>'
+        cov.replaceWith(hero)
+      }
+
       // 1. Strip ® e blocchi unicode
       const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT)
       const toFix: Text[] = []

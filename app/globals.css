@@ -1736,6 +1736,180 @@ td .status-missing,
 }
 
 /* ============================================================================
+   COVER HERO · pagina di copertina Volume I, stile report editoriale
+   Sostituisce la diagnosi-cover originale del Volume I con una versione
+   d'impatto a tutta pagina, ispirata ai rapporti istituzionali di pregio
+   (McKinsey, BCG, HBR Special Issue). Asimmetria moderna, silenzio
+   tipografico, watermark numerico sullo sfondo, brand identity forte.
+   ============================================================================ */
+.diagnosi-cover-hero {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 2rem;
+  min-height: 95vh;
+  padding: 0;
+  overflow: hidden;
+  break-after: page;
+  page-break-after: always;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Watermark numerico decorativo (grande "I" grigio chiaro in basso a destra) */
+.diagnosi-cover-hero::after {
+  content: 'I';
+  position: absolute;
+  right: -2rem;
+  bottom: -3rem;
+  font-family: var(--mc-serif);
+  font-weight: 200;
+  font-size: 26rem;
+  line-height: 0.78;
+  letter-spacing: -0.05em;
+  color: var(--mc-line);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+.diagnosi-cover-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Top bar: logo + kicker */
+.diagnosi-cover-hero .ch-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0 0.9rem;
+  border-bottom: 1px solid var(--mc-ink);
+}
+.diagnosi-cover-hero .ch-brand {
+  font-family: var(--mc-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mc-ink);
+}
+.diagnosi-cover-hero .ch-kicker {
+  font-family: var(--mc-sans);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mc-ink-mute);
+}
+
+/* Centro: titolo e sottotitolo */
+.diagnosi-cover-hero .ch-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 0 0;
+  max-width: 88%;
+}
+.diagnosi-cover-hero .ch-title {
+  font-family: var(--mc-serif);
+  font-weight: 400;
+  font-size: 5.8rem;
+  line-height: 0.96;
+  letter-spacing: -0.025em;
+  color: var(--mc-ink);
+  margin: 0 0 1.2rem;
+}
+.diagnosi-cover-hero .ch-subtitle {
+  font-family: var(--mc-serif);
+  font-style: italic;
+  font-size: 1.55rem;
+  line-height: 1.3;
+  color: var(--mc-ink-soft);
+  margin: 0;
+  max-width: 28em;
+}
+.diagnosi-cover-hero .ch-rule {
+  width: 90px;
+  height: 3px;
+  background: var(--mc-accent);
+  margin: 2rem 0 0;
+  border: 0;
+}
+
+/* Dedica al cliente */
+.diagnosi-cover-hero .ch-dedicato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem 0 0;
+  max-width: 75%;
+}
+.diagnosi-cover-hero .ch-dedicato-label {
+  font-family: var(--mc-sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--mc-accent);
+}
+.diagnosi-cover-hero .ch-dedicato-name {
+  font-family: var(--mc-serif);
+  font-weight: 600;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--mc-ink);
+  letter-spacing: -0.015em;
+}
+.diagnosi-cover-hero .ch-dedicato-sub {
+  font-family: var(--mc-serif);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--mc-ink-soft);
+  line-height: 1.4;
+  max-width: 36em;
+}
+
+/* Footer: autore + motto */
+.diagnosi-cover-hero .ch-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--mc-line);
+  gap: 2rem;
+}
+.diagnosi-cover-hero .ch-footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.diagnosi-cover-hero .ch-footer-meta {
+  font-family: var(--mc-sans);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mc-ink-mute);
+}
+.diagnosi-cover-hero .ch-footer-author {
+  font-family: var(--mc-serif);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--mc-ink);
+}
+.diagnosi-cover-hero .ch-motto {
+  font-family: var(--mc-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--mc-ink-soft);
+  text-align: right;
+  max-width: 18em;
+  line-height: 1.4;
+}
+
+/* ============================================================================
    VOLUME OPENER · pagina di apertura volume stile libro premium
    Sostituisce la cover/lettera ripetuta dei Volumi II e III con una vera
    pagina di apertura: kicker "VOLUME", numero romano gigante grigio chiaro,
