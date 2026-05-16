@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { DiagnosiViewer } from '@/components/diagnosi-viewer'
 import { displayDiagnosiContent } from '@/lib/diagnosi-content'
-import { exportElementToPdf } from '@/lib/export-diagnosi-pdf'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
@@ -59,6 +58,8 @@ function rowHasDisplayContent(d: DiagnosiData): boolean {
 export default function ReviewPage() {
   const { token } = useParams<{ token: string }>()
   const reviewToken = Array.isArray(token) ? token[0] : token
+  const searchParams = useSearchParams()
+  const isPrintMode = searchParams.get('print') === '1'
 
   const [diagnosi, setDiagnosi] = useState<DiagnosiData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -221,11 +222,22 @@ export default function ReviewPage() {
   }
 
   const handleDownloadPdf = async () => {
-    if (!contentRef.current || !diagnosi) return
+    if (!diagnosi || !reviewToken) return
     setIsExporting(true)
     try {
-      const filename = `diagnosi-${diagnosi.tipo}-${new Date().toISOString().slice(0, 10)}.pdf`
-      await exportElementToPdf(contentRef.current, filename)
+      const res = await fetch(`/api/diagnosi-pdf?token=${encodeURIComponent(reviewToken)}`)
+      if (!res.ok) {
+        throw new Error(`Errore server: ${res.status}`)
+      }
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = `diagnosi-${diagnosi.tipo}-${new Date().toISOString().slice(0, 10)}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(blobUrl)
     } catch (err) {
       console.error('Errore durante l\'esportazione PDF:', err)
     } finally {
@@ -264,6 +276,18 @@ export default function ReviewPage() {
 
   const tipoLabel = TIPO_LABELS[diagnosi.tipo] || diagnosi.tipo
   const isStrategica = diagnosi.tipo === 'diagnosi_strategica'
+
+  if (isPrintMode) {
+    return (
+      <div className="bg-white">
+        {rowHasDisplayContent(diagnosi) && (
+          <div className="pdf-content pdf-export-active">
+            <DiagnosiViewer content={savedDisplayContent || ' '} />
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50 py-8 print:bg-white print:py-0">

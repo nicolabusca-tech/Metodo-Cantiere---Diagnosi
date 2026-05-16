@@ -3,7 +3,6 @@
 import { useRef, useState } from 'react'
 import { DiagnosiViewer } from '@/components/diagnosi-viewer'
 import { Button } from '@/components/ui/button'
-import { exportElementToPdf } from '@/lib/export-diagnosi-pdf'
 import { FileDown } from 'lucide-react'
 
 interface DiagnosiWithDownloadProps {
@@ -11,6 +10,7 @@ interface DiagnosiWithDownloadProps {
   createdAt: string
   content: string
   tipo: string
+  reviewToken?: string
 }
 
 export function DiagnosiWithDownload({
@@ -18,16 +18,31 @@ export function DiagnosiWithDownload({
   createdAt,
   content,
   tipo,
+  reviewToken,
 }: DiagnosiWithDownloadProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const [isExporting, setIsExporting] = useState(false)
 
   const handleDownloadPdf = async () => {
-    if (!contentRef.current) return
+    if (!reviewToken) {
+      console.error('Token mancante per esportazione PDF')
+      return
+    }
     setIsExporting(true)
     try {
-      const filename = `analisi-${tipo}-${new Date().toISOString().slice(0, 10)}.pdf`
-      await exportElementToPdf(contentRef.current, filename)
+      const res = await fetch(`/api/diagnosi-pdf?token=${encodeURIComponent(reviewToken)}`)
+      if (!res.ok) {
+        throw new Error(`Errore server: ${res.status}`)
+      }
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = `analisi-${tipo}-${new Date().toISOString().slice(0, 10)}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(blobUrl)
     } catch (err) {
       console.error('Errore durante l\'esportazione PDF:', err)
     } finally {

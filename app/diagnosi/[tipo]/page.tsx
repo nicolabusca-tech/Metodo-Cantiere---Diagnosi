@@ -136,6 +136,7 @@ async function DiagnosiPageBody({ tipo }: { tipo: string }) {
           })}`}
           content={displayContent}
           tipo={tipo}
+          reviewToken={diagnosi.secret_token}
         />
       </div>
     </div>
