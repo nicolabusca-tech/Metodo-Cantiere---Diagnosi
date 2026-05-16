@@ -123,8 +123,10 @@ export async function GET(req: Request) {
       Object.keys(volumeOpenerInfo).forEach((volNum) => {
         const vol = document.querySelector('[data-volume="' + volNum + '"]')
         if (!vol) return
-        // Rimuovi cover e lettera duplicate (sono ridondanti dopo il Volume I)
-        vol.querySelectorAll(':scope > .diagnosi-cover, :scope > .diagnosi-letter').forEach(
+        // Rimuovi cover e lettera duplicate (sono ridondanti dopo il Volume I).
+        // Niente :scope > per essere robusti rispetto a wrapper extra emessi
+        // dal template HTML: rimuoviamo qualunque cover/lettera nested dentro.
+        vol.querySelectorAll('.diagnosi-cover, .diagnosi-letter').forEach(
           (el) => el.remove()
         )
         // Inserisci pagina opener distintiva all'inizio del volume
