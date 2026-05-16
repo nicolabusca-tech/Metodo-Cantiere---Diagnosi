@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -23,7 +24,8 @@ export default async function HomePage() {
   } = await supabase.auth.getUser()
 
   if (user) {
-    const { data: profile } = await supabase
+    const admin = createAdminClient()
+    const { data: profile } = await admin
       .from('utenti')
       .select('is_admin')
       .eq('id', user.id)

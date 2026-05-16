@@ -31,17 +31,15 @@ export default function LoginPage() {
       if (error) throw error
 
       if (data.user) {
-        // Decido la destinazione in base al ruolo: gli admin entrano nel
-        // pannello /setup, i clienti vanno alla pagina prodotti.
-        const { data: profile } = await supabase
-          .from('utenti')
-          .select('is_admin')
-          .eq('id', data.user.id)
-          .maybeSingle()
-
-        if (profile?.is_admin) {
-          router.push('/setup')
-        } else {
+        // Il redirect lo decide il server: chiede a /api/auth/role che
+        // legge is_admin con admin client (service_role). Cosi' non
+        // dipendiamo da policy RLS lato browser ne' da race condition
+        // con la propagazione del cookie di sessione appena impostato.
+        try {
+          const res = await fetch('/api/auth/role', { cache: 'no-store' })
+          const payload = await res.json()
+          router.push(payload?.redirect || '/prodotti')
+        } catch {
           router.push('/prodotti')
         }
       }
@@ -73,8 +71,15 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-2">Accedi</h1>
-          <p className="text-neutral-600 mb-6">Inserisci le tue credenziali per accedere</p>
+          <h1 className="text-2xl font-semibold text-neutral-900 mb-2">Accedi al portale</h1>
+          <p className="text-neutral-600 mb-6 text-sm leading-relaxed">
+            Da qui entri in area riservata. Se hai gi&agrave; acquistato un prodotto,
+            trovi i form da compilare e i tuoi report. Se sei un nuovo cliente,{' '}
+            <Link href="/auth/sign-up" className="text-primary font-medium hover:underline">
+              registrati qui
+            </Link>
+            .
+          </p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
