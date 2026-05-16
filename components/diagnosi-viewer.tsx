@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useEffect, useRef } from 'react'
 import { contentToSafeHtml } from '@/lib/diagnosi-sanitize'
+import { applyDiagnosiTransforms } from '@/lib/diagnosi-transforms'
 
 interface DiagnosiViewerProps {
   content: string
@@ -13,9 +14,25 @@ export function DiagnosiViewer({ content, className = '' }: DiagnosiViewerProps)
 
   const isStructuredDocument = safeHtml.includes('diagnosi-document')
 
+  const containerRef = useRef<HTMLElement | null>(null)
+
+  // Allinea il rendering a video con il PDF: applica le stesse trasformazioni
+  // grafiche (volume-opener, donut chart, VP-callout XL, pull-quote XL,
+  // running head dinamico, widget peso, strip ®) dopo che React ha montato
+  // l'HTML strutturato. removeOldFooter:false perche' a video il footer
+  // template e' decorativo (a differenza del PDF dove la numerazione la mette
+  // Chromium nativo via footerTemplate).
+  useEffect(() => {
+    if (!isStructuredDocument) return
+    const el = containerRef.current
+    if (!el) return
+    applyDiagnosiTransforms(el, { removeOldFooter: false })
+  }, [isStructuredDocument, safeHtml])
+
   if (isStructuredDocument) {
     return (
       <article
+        ref={(el) => { containerRef.current = el }}
         className={className}
         dangerouslySetInnerHTML={{ __html: safeHtml }}
       />
