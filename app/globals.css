@@ -195,9 +195,21 @@
 /* --- PROSA ---------------------------------------------------------------- */
 .diagnosi-document p {
   margin: 0 0 1.1rem;
-  hyphens: auto;
+  hyphens: manual;
+  -webkit-hyphens: manual;
   orphans: 3;
   widows: 3;
+  text-wrap: pretty;
+}
+
+/* Niente word-break aggressivi su nessun discendente del documento.
+   Le parole rimangono intere; se non ci stanno, vanno a capo intere. */
+.diagnosi-document,
+.diagnosi-document * {
+  word-break: normal;
+  overflow-wrap: normal;
+  -webkit-hyphens: manual;
+  hyphens: manual;
 }
 
 .diagnosi-document p.dropcap::first-letter,
@@ -348,11 +360,13 @@
 .cover-title {
   font-family: var(--mc-serif);
   font-weight: 400;
-  font-size: clamp(2.4rem, 5.8vw, 4.4rem);
-  line-height: 1;
+  font-size: 4rem;
+  line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--mc-ink);
-  margin: 0 0 0.7rem;
+  margin: 0 0 1.4rem;
+  padding-bottom: 0.2rem;
+  display: block;
 }
 .cover-title em,
 .cover-title .accent {
@@ -374,11 +388,11 @@
 
 .cover-meta {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.45rem 1.4rem;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.55rem 1.2rem;
   font-family: var(--mc-sans);
-  font-size: 0.74rem;
-  max-width: 440px;
+  font-size: 0.82rem;
+  width: 100%;
   margin: 0 0 2.4rem;
   background: transparent;
   border: 0;
@@ -386,28 +400,51 @@
 }
 .cover-meta dt,
 .cover-meta .cover-meta-label {
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--mc-ink-mute);
+  color: var(--mc-accent);
+  white-space: nowrap;
 }
 .cover-meta dd,
 .cover-meta .cover-meta-value {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--mc-ink);
   margin: 0;
+  min-width: 0;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
-/* Retrocompatibilità markup vecchio */
+
+/* Retrocompatibilità markup vecchio (n8n attuale emette questo pattern).
+   Layout a due colonne per coppia: label + value sulla stessa riga,
+   con value largo abbastanza da non andare in verticale. */
 .cover-meta-row {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.3rem 1rem;
+  align-items: baseline;
   font-family: var(--mc-sans);
   font-size: 0.88rem;
-  padding: 0.18rem 0;
+  padding: 0.2rem 0;
   color: var(--mc-ink);
+  width: 100%;
 }
 .cover-meta-row .cover-meta-label {
   font-weight: 700;
   color: var(--mc-accent);
-  margin-right: 0.4em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  margin-right: 0;
+}
+.cover-meta-row > *:not(.cover-meta-label) {
+  min-width: 0;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: manual;
 }
 
 /* Elenco volumi in coda alla cover */
@@ -1195,13 +1232,49 @@
   page-break-inside: avoid;
 }
 
-/* Tabelle: le righe non si spezzano mai. Il thead si ripete. */
-.pdf-export-active .diagnosi-table { break-inside: auto; }
-.pdf-export-active .diagnosi-table thead { display: table-header-group; }
-.pdf-export-active .diagnosi-table tfoot { display: table-footer-group; }
-.pdf-export-active .diagnosi-table tr {
+/* Chiusura lettera: closing + signature + motto restano sempre insieme
+   sull'ultima pagina della lettera, niente firma orfana. */
+.pdf-export-active .letter-closing,
+.pdf-export-active .letter-signature,
+.pdf-export-active .letter-motto,
+.pdf-export-active .section-author {
+  break-before: avoid;
+  page-break-before: avoid;
   break-inside: avoid;
   page-break-inside: avoid;
+}
+
+/* Tabelle: le righe non si spezzano mai. Il thead si ripete su ogni pagina. */
+.pdf-export-active .diagnosi-table { break-inside: auto; }
+.pdf-export-active .diagnosi-table thead {
+  display: table-header-group;
+  break-after: avoid;
+  page-break-after: avoid;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.pdf-export-active .diagnosi-table tfoot { display: table-footer-group; }
+.pdf-export-active .diagnosi-table tr,
+.pdf-export-active .diagnosi-table tbody tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  break-before: auto;
+}
+.pdf-export-active .diagnosi-table tbody tr:first-child {
+  break-before: avoid;
+  page-break-before: avoid;
+}
+
+/* Titoli e tabelle accoppiati: se un titolo precede direttamente una tabella
+   non possono spezzarsi tra di loro. */
+.pdf-export-active h2 + .diagnosi-table,
+.pdf-export-active h3 + .diagnosi-table,
+.pdf-export-active h4 + .diagnosi-table,
+.pdf-export-active .section-title + .diagnosi-table,
+.pdf-export-active .section-label + .diagnosi-table,
+.pdf-export-active p + .diagnosi-table {
+  break-before: avoid;
+  page-break-before: avoid;
 }
 
 /* Titoli mai in fondo pagina staccati dal contenuto che li segue */
@@ -1302,12 +1375,14 @@
     margin: 0 !important;
   }
 
-  /* Pagine principali sempre su foglio nuovo */
+  /* Solo cover di volume, toc, lettera e divider partono su foglio nuovo.
+     Le sezioni interne (sezione 01, 02, area 01, fase 1, ecc.) NON forzano
+     un salto pagina, scorrono dove finisce la precedente. Cosi si evitano
+     le pagine semi-vuote che frammentano il documento. */
   .diagnosi-cover,
   .diagnosi-toc,
   .diagnosi-letter,
-  .diagnosi-divider,
-  .diagnosi-section {
+  .diagnosi-divider {
     break-before: page;
     page-break-before: always;
   }
@@ -1344,13 +1419,47 @@
     page-break-inside: avoid;
   }
 
-  /* Tabelle: righe intere, thead ripetuto su ogni pagina della tabella */
-  .diagnosi-table { break-inside: auto; }
-  .diagnosi-table thead { display: table-header-group; }
-  .diagnosi-table tfoot { display: table-footer-group; }
-  .diagnosi-table tr {
+  /* Chiusura lettera: firma sempre attaccata, niente orfani su pagina nuova */
+  .letter-closing,
+  .letter-signature,
+  .letter-motto,
+  .section-author {
+    break-before: avoid;
+    page-break-before: avoid;
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  /* Tabelle: righe intere, thead ripetuto su ogni pagina della tabella.
+     L'header sta sempre attaccato alla prima riga, mai orfano. */
+  .diagnosi-table { break-inside: auto; }
+  .diagnosi-table thead {
+    display: table-header-group;
+    break-after: avoid;
+    page-break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .diagnosi-table tfoot { display: table-footer-group; }
+  .diagnosi-table tr,
+  .diagnosi-table tbody tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .diagnosi-table tbody tr:first-child {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
+  /* Titoli che precedono direttamente tabelle: mai spezzati */
+  h2 + .diagnosi-table,
+  h3 + .diagnosi-table,
+  h4 + .diagnosi-table,
+  .section-title + .diagnosi-table,
+  .section-label + .diagnosi-table,
+  p + .diagnosi-table {
+    break-before: avoid;
+    page-break-before: avoid;
   }
 
   /* Titoli: mai orfani in fondo pagina */
@@ -1372,4 +1481,86 @@
   }
 
   .pdf-content { break-inside: auto; }
+}
+
+/* ============================================================================
+   FIX PRAGMATICI V1.1.1 · pulizia dei pattern emessi da n8n
+   ---
+   Questi selettori difendono il rendering da tre pattern che oggi escono
+   sgradevoli sui PDF reali, prima che n8n venga aggiornato per emettere
+   le classi V1.1 nuove (num-cell, diagnosi-divider, diagnosi-toc).
+   ============================================================================ */
+
+/* 1 · Badge livello area (CRITICO, NELLA MEDIA, BUONO, ECCELLENTE) tagliato.
+      Forziamo l'etichetta a stare su una riga, senza overflow ne clip. */
+.diagnosi-document [class*="level"],
+.diagnosi-document [class*="livello"],
+.diagnosi-document .area-level,
+.diagnosi-document .score-level,
+.diagnosi-document .profilo,
+.diagnosi-document .profilo-livello,
+.diagnosi-document .area-score-label {
+  display: inline-block;
+  overflow: visible;
+  white-space: nowrap;
+  max-width: none;
+  text-overflow: clip;
+  font-family: var(--mc-sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.18em 0.55em;
+  border-radius: 2px;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+/* 2 · Mini bar di punteggio fatte con blocchi unicode (■■■░░░).
+      Quando il template emette un elemento con SOLO caratteri di blocco
+      lo nascondiamo: e' un fallback grezzo, in attesa che n8n emetta
+      la vera num-cell con attributo --pct. */
+.diagnosi-document .score-bar,
+.diagnosi-document .score-blocks,
+.diagnosi-document .area-bar,
+.diagnosi-document .progress-blocks,
+.diagnosi-document .mini-bar,
+.diagnosi-document .area-progress,
+.diagnosi-document .area-meter,
+.diagnosi-document .punteggio-bar {
+  display: none;
+}
+
+/* 3 · Pre-header pagina 1 (logo + titolo generico + data) emesso dal
+      template prima del .diagnosi-cover vero. Lo nascondiamo cosi il
+      documento parte direttamente dalla cover editoriale. */
+.diagnosi-document > .document-header,
+.diagnosi-document > .pdf-header,
+.diagnosi-document > .doc-header,
+.diagnosi-document > header,
+.diagnosi-document > .header,
+.diagnosi-document > .intro-header,
+.diagnosi-document > .header-export {
+  display: none;
+}
+
+/* 4 · Punteggio area "30 / 100" leggibilita: lo rendiamo riconoscibile
+      come metrica con stile mono tabulare e proporzione corretta. */
+.diagnosi-document .area-score,
+.diagnosi-document .score-value,
+.diagnosi-document .punteggio,
+.diagnosi-document .punteggio-area {
+  font-family: var(--mc-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 600;
+  font-size: 1.6rem;
+  color: var(--mc-ink);
+  line-height: 1.1;
+  display: inline-block;
+  margin-right: 0.6rem;
+}
+.diagnosi-document .area-score .score-max,
+.diagnosi-document .punteggio .score-max {
+  color: var(--mc-ink-mute);
+  font-weight: 400;
 }
