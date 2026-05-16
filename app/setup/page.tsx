@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, type FormEvent } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,6 @@ import {
   Plus,
   Trash2,
   Save,
-  Lock,
   GripVertical,
   Eye,
   Settings,
@@ -69,75 +68,6 @@ function typeBadgeColor(type: FormQuestion["type"]): string {
     competitors: "bg-red-100 text-red-800",
   }
   return map[type] || "bg-gray-100 text-gray-800"
-}
-
-// ────────────────────────────────────────────
-// Password Gate
-// ────────────────────────────────────────────
-function PasswordGate({ onAuth }: { onAuth: () => void }) {
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
-
-    try {
-      const res = await fetch("/api/setup/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      })
-
-      if (res.ok) {
-        onAuth()
-      } else {
-        const data = await res.json()
-        setError(data.error || "Accesso negato")
-      }
-    } catch {
-      setError("Errore di connessione")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-14 h-14 bg-neutral-100 rounded-full flex items-center justify-center">
-            <Lock className="w-7 h-7 text-neutral-600" />
-          </div>
-          <CardTitle className="text-2xl">Setup Configurazione</CardTitle>
-          <CardDescription>Inserisci la password per accedere</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Inserisci la password..."
-                autoFocus
-              />
-            </div>
-            {error && (
-              <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">{error}</p>
-            )}
-            <Button type="submit" className="w-full" disabled={loading || !password}>
-              {loading ? "Verifica..." : "Accedi"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  )
 }
 
 // ────────────────────────────────────────────
@@ -1213,44 +1143,9 @@ function OmaggioAccessSection() {
 // ────────────────────────────────────────────
 // Main Setup Page
 // ────────────────────────────────────────────
+// Il gate (sessione Supabase + utenti.is_admin) e' applicato in
+// app/setup/layout.tsx; qui arriva solo chi e' davvero admin.
 export default function SetupPage() {
-  const [authenticated, setAuthenticated] = useState(false)
-  const [checking, setChecking] = useState(true)
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch("/api/setup/auth")
-        const data = await res.json()
-        if (data.authenticated) {
-          const params = new URLSearchParams(window.location.search)
-          const token = params.get("token")
-          const expectedToken = token
-          if (expectedToken) {
-            setAuthenticated(true)
-          }
-        }
-      } catch {
-        // not authenticated
-      } finally {
-        setChecking(false)
-      }
-    }
-    checkAuth()
-  }, [])
-
-  if (checking) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <p className="text-neutral-500">Verifica accesso...</p>
-      </div>
-    )
-  }
-
-  if (!authenticated) {
-    return <PasswordGate onAuth={() => setAuthenticated(true)} />
-  }
-
   return (
     <div className="min-h-screen bg-neutral-50">
       <div className="max-w-6xl mx-auto px-4 py-8">

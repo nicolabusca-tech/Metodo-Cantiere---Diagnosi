@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-const COOKIE_NAME = 'setup_session'
+import { requireAdmin } from '@/lib/setup-auth'
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -21,15 +19,9 @@ function isMissingOmaggioColumnError(err: { code?: string; message?: string } | 
   return m.includes('access_omaggio_analisi') || m.includes('access_omaggio_diagnosi')
 }
 
-async function isSetupAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies()
-  return !!cookieStore.get(COOKIE_NAME)?.value
-}
-
 export async function GET(request: NextRequest) {
-  if (!(await isSetupAuthenticated())) {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
 
   const { searchParams } = new URL(request.url)
   const supabase = createAdminClient()
@@ -111,9 +103,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  if (!(await isSetupAuthenticated())) {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
 
   let body: Record<string, unknown>
   try {

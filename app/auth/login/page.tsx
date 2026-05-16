@@ -31,7 +31,19 @@ export default function LoginPage() {
       if (error) throw error
 
       if (data.user) {
-        router.push('/prodotti')
+        // Decido la destinazione in base al ruolo: gli admin entrano nel
+        // pannello /setup, i clienti vanno alla pagina prodotti.
+        const { data: profile } = await supabase
+          .from('utenti')
+          .select('is_admin')
+          .eq('id', data.user.id)
+          .maybeSingle()
+
+        if (profile?.is_admin) {
+          router.push('/setup')
+        } else {
+          router.push('/prodotti')
+        }
       }
     } catch (err: any) {
       // Personalizza il messaggio di errore per credenziali errate

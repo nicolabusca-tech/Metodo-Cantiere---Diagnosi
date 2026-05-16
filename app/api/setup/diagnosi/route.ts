@@ -1,19 +1,10 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-const COOKIE_NAME = 'setup_session'
-
-async function isAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies()
-  const session = cookieStore.get(COOKIE_NAME)
-  return !!session?.value
-}
+import { requireAdmin } from '@/lib/setup-auth'
 
 export async function GET() {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
 
   try {
     const supabase = createAdminClient()

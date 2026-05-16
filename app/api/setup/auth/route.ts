@@ -1,66 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createHash, randomBytes } from 'crypto'
-import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
-const COOKIE_NAME = 'setup_session'
-const COOKIE_MAX_AGE = 60 * 60 * 24 // 24 hours
-
-function generateSessionToken(): string {
-  const secret = process.env.SETUP_PASSWORD || ''
-  const nonce = randomBytes(16).toString('hex')
-  const hash = createHash('sha256').update(`${secret}:${nonce}:${Date.now()}`).digest('hex')
-  return `${nonce}.${hash}`
-}
-
-function verifyToken(token: string): boolean {
-  if (!token || !token.includes('.')) return false
-  return true
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const { password } = await request.json()
-
-    const expectedPassword = process.env.SETUP_PASSWORD || '1234'
-
-    if (password !== expectedPassword) {
-      return NextResponse.json(
-        { error: 'Password non corretta' },
-        { status: 401 }
-      )
-    }
-
-    const sessionToken = generateSessionToken()
-
-    const cookieStore = await cookies()
-    cookieStore.set(COOKIE_NAME, sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: COOKIE_MAX_AGE,
-      path: '/',
-    })
-
-    return NextResponse.json({ success: true })
-  } catch {
-    return NextResponse.json(
-      { error: 'Errore interno' },
-      { status: 500 }
-    )
-  }
-}
-
+/**
+ * Lo stato di autenticazione del Setup non e' piu' una password dedicata:
+ * coincide con la sessione Supabase + flag utenti.is_admin. Questo endpoint
+ * espone in lettura quello stato per i componenti client che lo chiedono.
+ * Il vero gating sulle API e' fatto da requireAdmin() in /lib/setup-auth.ts.
+ */
 export async function GET() {
   try {
-    const cookieStore = await cookies()
-    const session = cookieStore.get(COOKIE_NAME)
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-    if (!session || !verifyToken(session.value)) {
-      return NextResponse.json({ authenticated: false })
+    if (!user) {
+      return NextResponse.json({ authenticated: false, reason: 'no_session' })
+    }
+
+    const { data: row } = await supabase
+      .from('utenti')
+      .select('is_admin')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (!row?.is_admin) {
+      return NextResponse.json({ authenticated: false, reason: 'not_admin' })
     }
 
     return NextResponse.json({ authenticated: true })
   } catch {
-    return NextResponse.json({ authenticated: false })
+    return NextResponse.json({ authenticated: false, reason: 'error' })
   }
 }
