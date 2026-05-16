@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
-import chromium from '@sparticuz/chromium'
+import chromium from '@sparticuz/chromium-min'
 import puppeteer from 'puppeteer-core'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
+
+const CHROMIUM_PACK_URL =
+  'https://github.com/Sparticuz/chromium/releases/download/v148.0.0/chromium-v148.0.0-pack.x64.tar'
 
 const LOCAL_CHROME_PATHS = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -14,13 +17,13 @@ const LOCAL_CHROME_PATHS = [
 
 async function resolveExecutablePath(): Promise<string> {
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-    return chromium.executablePath()
+    return chromium.executablePath(CHROMIUM_PACK_URL)
   }
   const { existsSync } = await import('node:fs')
   for (const p of LOCAL_CHROME_PATHS) {
     if (existsSync(p)) return p
   }
-  return chromium.executablePath()
+  return chromium.executablePath(CHROMIUM_PACK_URL)
 }
 
 export async function GET(req: Request) {

@@ -96,7 +96,7 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: 1.1.6
         version: 1.1.6(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@sparticuz/chromium':
+      '@sparticuz/chromium-min':
         specifier: ^148.0.0
         version: 148.0.0
       '@stripe/react-stripe-js':
@@ -1300,8 +1300,8 @@ packages:
   '@radix-ui/rect@1.1.0':
     resolution: {integrity: sha512-A9+lCBZoaMJlVKcRBz2YByCG+Cp2t6nAnMnNba+XiWxnj6r4JUFqfsgwocMBZU9LPtdxC6wB56ySYpc7LQIoJg==}
 
-  '@sparticuz/chromium@148.0.0':
-    resolution: {integrity: sha512-na5beDSZkrlcEWEMt+eHu4Xe+MLUgCtHBjHaXGsNaQu5tJWwXE+McxAcMtyumEM/JzXrxGpkO5vAPD9TWhil3g==}
+  '@sparticuz/chromium-min@148.0.0':
+    resolution: {integrity: sha512-3RW2gPJrOIutXdTtwLDuIFOZwKKq4YU2zwt73U75QmgYaDVSYfSC1xLksou71sAy1B/MgZhLSmU+wCZDLW4MFg==}
     engines: {node: '>=22.17.0'}
 
   '@stripe/react-stripe-js@5.6.0':
@@ -3552,7 +3552,7 @@ snapshots:
 
   '@radix-ui/rect@1.1.0': {}
 
-  '@sparticuz/chromium@148.0.0':
+  '@sparticuz/chromium-min@148.0.0':
     dependencies:
       tar-fs: 3.1.2
     transitivePeerDependencies:
