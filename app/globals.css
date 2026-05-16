@@ -1750,8 +1750,6 @@ td .status-missing,
   min-height: 95vh;
   padding: 0;
   overflow: hidden;
-  break-after: page;
-  page-break-after: always;
   break-inside: avoid;
   page-break-inside: avoid;
 }

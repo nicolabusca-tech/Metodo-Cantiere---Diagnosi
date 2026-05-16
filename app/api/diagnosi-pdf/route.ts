@@ -145,7 +145,25 @@ export async function GET(req: Request) {
             '<div class="ch-motto">' + '“Dal contatto al contratto, passo passo.”' + '</div>' +
           '</div>'
         cov.replaceWith(hero)
+
+        // Rimuovi page-break orfani dopo la cover hero (eliminano la pag 2 vuota)
+        let next = hero.nextElementSibling
+        while (next && next.classList.contains('diagnosi-page-break')) {
+          const toRemove = next
+          next = next.nextElementSibling
+          toRemove.remove()
+        }
       }
+
+      // 0b. Tabelle corte (<= 8 righe totali) non si spezzano mai fra pagine.
+      // Le tabelle lunghe spezzano normalmente con header ripetuto.
+      Array.from(document.querySelectorAll('table')).forEach((tbl) => {
+        const rows = tbl.querySelectorAll('tr').length
+        if (rows <= 8) {
+          ;(tbl as HTMLElement).style.breakInside = 'avoid'
+          ;(tbl as HTMLElement).style.pageBreakInside = 'avoid'
+        }
+      })
 
       // 1. Strip ® e blocchi unicode
       const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT)

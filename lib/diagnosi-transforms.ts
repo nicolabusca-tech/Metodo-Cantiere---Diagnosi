@@ -110,7 +110,29 @@ export function applyDiagnosiTransforms(
         '<div class="ch-motto">' + '“Dal contatto al contratto, passo passo.”' + '</div>' +
       '</div>'
     cov.replaceWith(hero)
+
+    // Dopo la cover hero del Vol I, rimuovi i diagnosi-page-break orfani
+    // che restano nel template prima della lettera (causano la pagina 2
+    // vuota con solo il filetto).
+    let next = hero.nextElementSibling
+    while (next && next.classList.contains('diagnosi-page-break')) {
+      const toRemove = next
+      next = next.nextElementSibling
+      toRemove.remove()
+    }
   }
+
+  // 0b. Tabelle corte non si spezzano mai fra pagine.
+  // Conto le righe (header + body): se <= 8 totali, applico break-inside:avoid.
+  // Le tabelle lunghe (calendari fasi, scorecard estese) lasciano spezzare
+  // naturalmente con header ripetuto. Soglia 8 = circa mezza pagina A4.
+  Array.from(container.querySelectorAll('table')).forEach((tbl) => {
+    const rows = tbl.querySelectorAll('tr').length
+    if (rows <= 8) {
+      ;(tbl as HTMLElement).style.breakInside = 'avoid'
+      ;(tbl as HTMLElement).style.pageBreakInside = 'avoid'
+    }
+  })
 
   // 1. Strip ® e blocchi unicode dai text nodes
   const walker = ownerDoc.createTreeWalker(container as Node, NodeFilter.SHOW_TEXT)
