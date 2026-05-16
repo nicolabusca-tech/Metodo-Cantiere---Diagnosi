@@ -1250,14 +1250,23 @@ td .status-missing,
 }
 
 /* ============================================================================
-   PAGE BREAK · FOOTER CORRENTE
+   PAGE BREAK DECORATIVO
+   ---
+   Il template HTML emesso da n8n inserisce <div class="diagnosi-page-break">
+   fra ogni sezione, con l'intento di forzare un salto pagina. Su un
+   documento di 50 pagine questo crea decine di pagine "mezze vuote"
+   perche' molte sezioni terminano a 2/3 di pagina e poi viene forzato
+   il break. Lasciamo solo il filetto decorativo grigio chiaro come
+   separatore visivo: il break vero avviene naturalmente quando il
+   contenuto raggiunge il margine inferiore, oppure quando un blocco
+   con break-before: page lo richiede (cover, lettera, divider).
    ============================================================================ */
 .diagnosi-page-break {
   height: 1px;
   background: var(--mc-line-soft);
-  margin: 2.8rem 0;
-  page-break-after: always;
-  break-after: page;
+  margin: 2.4rem 0;
+  page-break-after: auto;
+  break-after: auto;
 }
 
 .diagnosi-footer {
