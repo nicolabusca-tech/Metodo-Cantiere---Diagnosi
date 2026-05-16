@@ -31,10 +31,10 @@ export default function LoginPage() {
       if (error) throw error
 
       if (data.user) {
-        // Il redirect lo decide il server: chiede a /api/auth/role che
-        // legge is_admin con admin client (service_role). Cosi' non
-        // dipendiamo da policy RLS lato browser ne' da race condition
-        // con la propagazione del cookie di sessione appena impostato.
+        // Il redirect lo decide il server: /api/auth/role legge is_admin
+        // con admin client (service_role). Cosi' non dipendiamo da policy
+        // RLS lato browser ne' da race condition con la propagazione del
+        // cookie di sessione appena impostato.
         try {
           const res = await fetch('/api/auth/role', { cache: 'no-store' })
           const payload = await res.json()
@@ -44,7 +44,6 @@ export default function LoginPage() {
         }
       }
     } catch (err: any) {
-      // Personalizza il messaggio di errore per credenziali errate
       if (err.message === 'Invalid login credentials') {
         setError('Username e/password errati. Riprova.')
       } else {
@@ -56,95 +55,226 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center justify-center mb-8">
-          <Image
-            src="/logo-metodo-cantiere.png"
-            alt="Metodo Cantiere"
-            width={280}
-            height={80}
-            priority
-            className="w-auto h-auto"
-          />
-          <p className="text-2xl font-bold text-primary mt-2">Portale Strategico</p>
+    <main className="min-h-screen bg-white">
+      {/* Top bar minimale con logo e link home, cosi' chi e' atterrato
+          per caso dal sito principale sa di poter tornare indietro. */}
+      <header className="border-b border-neutral-200/70">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+          <Link href="/" aria-label="Metodo Cantiere - Home portale">
+            <Image
+              src="/logo-metodo-cantiere.png"
+              alt="Metodo Cantiere"
+              width={180}
+              height={50}
+              priority
+              className="h-auto w-[150px] sm:w-[180px]"
+            />
+          </Link>
+          <Link
+            href="/"
+            className="text-sm font-medium text-neutral-600 transition hover:text-primary"
+          >
+            &larr; Torna alla home
+          </Link>
         </div>
+      </header>
 
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-2">Accedi al portale</h1>
-          <p className="text-neutral-600 mb-6 text-sm leading-relaxed">
-            Da qui entri in area riservata. Se hai gi&agrave; acquistato un prodotto,
-            trovi i form da compilare e i tuoi report. Se sei un nuovo cliente,{' '}
-            <Link href="/auth/sign-up" className="text-primary font-medium hover:underline">
-              registrati qui
-            </Link>
-            .
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+        {/* Pannello sinistro: contesto e orientamento */}
+        <section className="order-2 lg:order-1">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            Portale Strategico Metodo Cantiere
+          </p>
+          <h1 className="font-serif text-3xl font-bold leading-tight text-neutral-900 sm:text-4xl">
+            Benvenuto nella tua area riservata.
+          </h1>
+          <p className="mt-5 text-base leading-relaxed text-neutral-700">
+            Da qui gestisci la tua relazione con Metodo Cantiere: compili il
+            form del prodotto che hai scelto, segui la generazione del report e
+            scarichi il documento finale in PDF.
           </p>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-neutral-900">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nome@esempio.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-11"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-neutral-900">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="h-11"
-              />
-            </div>
-
-            {error && (
-              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
-                {error}
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-medium disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading && (
-                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              )}
-              <span>{loading ? 'Accesso in corso...' : 'Accedi'}</span>
-            </Button>
-          </form>
-
-          <p className="text-center text-sm text-neutral-600 mt-6">
-            Non hai un account?{' '}
-            <Link href="/auth/sign-up" className="text-primary font-medium hover:underline">
-              Registrati
-            </Link>
-          </p>
-
-          <div className="mt-4 pt-6 border-t border-neutral-200">
-            <Link
-              href="/auth/forgot-password"
-              className="text-center block text-sm text-neutral-600 hover:text-primary font-medium transition-colors"
-            >
-              Hai dimenticato la password?
-            </Link>
+          <div className="mt-8 space-y-5">
+            <Bullet
+              n="A"
+              title="Hai gi&agrave; un account"
+              body="Inserisci email e password nel riquadro a fianco. Ti porta direttamente al tuo prodotto, allo stato in cui l'avevi lasciato."
+            />
+            <Bullet
+              n="B"
+              title="&Egrave; la prima volta che entri"
+              body="Vai su Registrati: creiamo l'account in 2 minuti, poi scegli fra Analisi Lampo (€147, 48 ore) e Diagnosi Strategica (€497, 10 giorni)."
+              cta={{ href: '/auth/sign-up', label: 'Crea il tuo account' }}
+            />
+            <Bullet
+              n="C"
+              title="Non ricordi la password"
+              body="Usa il link Hai dimenticato la password sotto al form: ti mandiamo un'email per reimpostarla."
+            />
           </div>
+
+          <p className="mt-10 rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-700">
+            <span className="font-semibold text-neutral-900">Vuoi prima capire i prodotti?</span>{' '}
+            Sul sito{' '}
+            <a
+              href="https://www.metodocantiere.com"
+              className="font-medium text-primary hover:underline"
+              rel="noopener noreferrer"
+            >
+              metodocantiere.com
+            </a>{' '}
+            trovi le pagine{' '}
+            <a
+              href="https://www.metodocantiere.com/audit/"
+              className="text-primary hover:underline"
+              rel="noopener noreferrer"
+            >
+              /audit
+            </a>{' '}
+            e{' '}
+            <a
+              href="https://www.metodocantiere.com/diagnosi/"
+              className="text-primary hover:underline"
+              rel="noopener noreferrer"
+            >
+              /diagnosi
+            </a>{' '}
+            che descrivono nel dettaglio i due percorsi.
+          </p>
+        </section>
+
+        {/* Pannello destro: form di login */}
+        <section className="order-1 lg:order-2 lg:pt-2">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="text-xl font-semibold text-neutral-900">Accedi</h2>
+            <p className="mt-1 mb-6 text-sm text-neutral-600">
+              Inserisci le tue credenziali per entrare.
+            </p>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-neutral-900">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="nome@esempio.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-neutral-900">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="h-11"
+                />
+              </div>
+
+              {error && (
+                <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex h-11 w-full items-center justify-center gap-2 bg-primary font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {loading && (
+                  <svg
+                    className="h-5 w-5 animate-spin"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                )}
+                <span>{loading ? 'Accesso in corso...' : 'Accedi'}</span>
+              </Button>
+            </form>
+
+            <div className="mt-6 space-y-3 border-t border-neutral-200 pt-6 text-center text-sm">
+              <p className="text-neutral-600">
+                Non hai un account?{' '}
+                <Link href="/auth/sign-up" className="font-semibold text-primary hover:underline">
+                  Registrati
+                </Link>
+              </p>
+              <Link
+                href="/auth/forgot-password"
+                className="block font-medium text-neutral-600 transition-colors hover:text-primary"
+              >
+                Hai dimenticato la password?
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer className="border-t border-neutral-200 bg-neutral-50">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-neutral-500 sm:flex-row sm:px-6">
+          <p>&copy; {new Date().getFullYear()} Metodo Cantiere</p>
+          <a
+            href="https://www.metodocantiere.com"
+            className="hover:text-primary"
+            rel="noopener noreferrer"
+          >
+            metodocantiere.com
+          </a>
         </div>
+      </footer>
+    </main>
+  )
+}
+
+function Bullet({
+  n,
+  title,
+  body,
+  cta,
+}: {
+  n: string
+  title: string
+  body: string
+  cta?: { href: string; label: string }
+}) {
+  return (
+    <div className="flex gap-4">
+      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+        {n}
+      </span>
+      <div className="flex-1">
+        <p
+          className="text-sm font-semibold text-neutral-900"
+          dangerouslySetInnerHTML={{ __html: title }}
+        />
+        <p
+          className="mt-1 text-sm leading-relaxed text-neutral-600"
+          dangerouslySetInnerHTML={{ __html: body }}
+        />
+        {cta && (
+          <Link
+            href={cta.href}
+            className="mt-2 inline-block text-sm font-semibold text-primary hover:underline"
+          >
+            {cta.label} &rarr;
+          </Link>
+        )}
       </div>
     </div>
   )
