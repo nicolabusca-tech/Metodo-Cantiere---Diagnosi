@@ -1098,23 +1098,19 @@
 .status-ok,
 .status-warning,
 .status-missing {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   box-sizing: border-box;
-  width: 1.45em;
-  height: 1.45em;
+  width: 1.05rem;
+  height: 1.05rem;
   border-radius: 50%;
-  font-size: 0;
-  line-height: 0;
-  color: transparent;
-  text-indent: -9999px;
+  text-indent: 200%;
   overflow: hidden;
-  margin-right: 0.5em;
-  vertical-align: middle;
+  white-space: nowrap;
+  margin-right: 0.45rem;
+  vertical-align: -0.18rem;
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 62% 62%;
+  background-size: 64% 64%;
 }
 .status-ok {
   background-color: var(--mc-ok-bg);
