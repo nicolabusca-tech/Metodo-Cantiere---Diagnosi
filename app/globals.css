@@ -223,6 +223,20 @@
   color: var(--mc-accent);
 }
 
+/* Drop cap automatico sul primo paragrafo di ogni sezione e di ogni
+   divider. Da un tocco editoriale premium ad ogni apertura di capitolo. */
+.diagnosi-document .diagnosi-section > p:first-of-type::first-letter,
+.diagnosi-document .diagnosi-divider + p::first-letter,
+.diagnosi-document .section-header + p::first-letter {
+  font-family: var(--mc-serif);
+  font-weight: 400;
+  float: left;
+  font-size: 3.6rem;
+  line-height: 0.9;
+  padding: 0.32rem 0.5rem 0 0;
+  color: var(--mc-accent);
+}
+
 .diagnosi-document strong,
 .diagnosi-document b { font-weight: 700; color: #111; }
 
@@ -237,17 +251,24 @@
 }
 .diagnosi-document a:hover { color: var(--mc-accent); }
 
-/* Titoli interni di prosa */
+/* Titoli interni di prosa.
+   h2 = livello Area / sotto-capitolo, serif italic accent per distinguersi
+        nettamente da section-title (che e' serif regular grande). */
 .diagnosi-document h2 {
   font-family: var(--mc-serif);
-  font-weight: 700;
-  font-size: 1.5rem;
-  line-height: 1.25;
-  color: #111;
+  font-weight: 600;
+  font-style: italic;
+  font-size: 1.7rem;
+  line-height: 1.18;
+  color: var(--mc-ink);
   margin: 2.4rem 0 0.9rem;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.012em;
   break-after: avoid;
   page-break-after: avoid;
+}
+.diagnosi-document h2 em,
+.diagnosi-document h2 .accent {
+  color: var(--mc-accent);
 }
 .diagnosi-document h3 {
   font-family: var(--mc-sans);
@@ -770,10 +791,20 @@
 }
 
 /* ============================================================================
-   SEZIONI
+   SEZIONI · gerarchia editoriale netta
+   Volume (cover-title) = 4rem serif, livello macro
+   Sezione (section-title) = 2.4rem serif, livello capitolo
+   Area (h2 interno) = 1.65rem serif italic, livello sotto-capitolo
    ============================================================================ */
-.diagnosi-section { padding: 0 0 2rem; }
-.section-header   { margin-bottom: 2rem; break-inside: avoid; page-break-inside: avoid; }
+.diagnosi-section {
+  padding: 1.5rem 0 2rem;
+}
+.section-header {
+  margin-bottom: 2.2rem;
+  padding-top: 0.5rem;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 .section-header-bar {
   display: flex;
   justify-content: space-between;
@@ -819,11 +850,11 @@
 .section-title {
   font-family: var(--mc-serif);
   font-weight: 400;
-  font-size: clamp(1.85rem, 3.4vw, 2.6rem);
-  line-height: 1.1;
-  letter-spacing: -0.015em;
+  font-size: 2.4rem;
+  line-height: 1.08;
+  letter-spacing: -0.018em;
   color: var(--mc-ink);
-  margin: 0 0 1.2rem;
+  margin: 0.1rem 0 1.2rem;
   break-after: avoid;
   page-break-after: avoid;
 }
@@ -1059,7 +1090,10 @@
 .num-cell.is-bench::after { background: var(--mc-ink-mute); }
 
 /* ============================================================================
-   STATUS CHIPS (cerchietti colorati)
+   STATUS CHIPS (cerchietti colorati con icone SVG vettoriali)
+   Il carattere unicode dentro lo span viene nascosto e sostituito da
+   un'icona SVG inline per garantire nitidezza vettoriale e visibilita
+   indipendente dal font system (utile su Chromium serverless).
    ============================================================================ */
 .status-ok,
 .status-warning,
@@ -1068,20 +1102,32 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 1.4em;
-  height: 1.4em;
+  width: 1.45em;
+  height: 1.45em;
   border-radius: 50%;
-  font-family: var(--mc-sans), 'Segoe UI Symbol', 'Noto Sans Symbols 2';
-  font-size: 0.8em;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+  text-indent: -9999px;
+  overflow: hidden;
   margin-right: 0.5em;
   vertical-align: middle;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 62% 62%;
 }
-.status-ok      { background: var(--mc-ok-bg);   color: var(--mc-ok); }
-.status-warning { background: var(--mc-warn-bg); color: var(--mc-warn); }
-.status-missing { background: var(--mc-crit-bg); color: var(--mc-crit); }
+.status-ok {
+  background-color: var(--mc-ok-bg);
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A8A3A' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 13 9 18 20 6'/%3E%3C/svg%3E");
+}
+.status-warning {
+  background-color: var(--mc-warn-bg);
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23B87700' stroke='none'%3E%3Cpath d='M12 3 L22 21 L2 21 Z' fill-opacity='0.18'/%3E%3Crect x='11' y='9' width='2' height='6' rx='1'/%3E%3Crect x='11' y='17' width='2' height='2' rx='1'/%3E%3C/svg%3E");
+}
+.status-missing {
+  background-color: var(--mc-crit-bg);
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B02E2E' stroke-width='4' stroke-linecap='round'%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3C/svg%3E");
+}
 
 /* ============================================================================
    PRIORITY LABELS (chip rettangolari)
@@ -1109,10 +1155,12 @@
 
 /* ============================================================================
    NEXT VOLUME (anticipazione Vol II / Vol III)
+   Reso compatto per minimizzare il rischio che venga spinto su pagina propria
+   con molto spazio vuoto sotto.
    ============================================================================ */
 .diagnosi-next-volume {
-  margin: 3rem 0 1.6rem;
-  padding: 2rem 1.8rem;
+  margin: 2rem 0 1rem;
+  padding: 1.3rem 1.5rem;
   background: var(--mc-paper-warm);
   border: 1px solid var(--mc-line);
   border-top: 3px solid var(--mc-accent);
@@ -1121,6 +1169,8 @@
   position: relative;
   break-inside: avoid;
   page-break-inside: avoid;
+  break-before: avoid;
+  page-break-before: avoid;
 }
 .diagnosi-next-volume::before {
   content: 'SEGUE';
@@ -1179,12 +1229,13 @@
   align-items: center;
   gap: 1rem;
   font-family: var(--mc-sans);
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   color: var(--mc-ink-mute);
   border-top: 1px solid var(--mc-line-soft);
-  padding-top: 0.75rem;
+  padding-top: 0.7rem;
   margin-top: 2.5rem;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   break-inside: avoid;
   page-break-inside: avoid;
 }
@@ -1194,6 +1245,8 @@
   font-weight: 500;
   color: var(--mc-ink-soft);
   letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.7rem;
 }
 .diagnosi-footer .diagnosi-logo--footer { flex: 0 0 auto; }
 .diagnosi-footer > div { flex: 1 1 auto; }
@@ -1266,13 +1319,22 @@
 }
 
 /* Titoli e tabelle accoppiati: se un titolo precede direttamente una tabella
-   non possono spezzarsi tra di loro. */
+   non possono spezzarsi tra di loro. Vale per qualunque tipo di precedente:
+   paragrafo, lista, kicker, etichetta. Aggressivo di proposito per evitare
+   pagine semi-vuote prima delle tabelle. */
+.pdf-export-active .diagnosi-table {
+  break-before: avoid;
+  page-break-before: avoid;
+}
 .pdf-export-active h2 + .diagnosi-table,
 .pdf-export-active h3 + .diagnosi-table,
 .pdf-export-active h4 + .diagnosi-table,
 .pdf-export-active .section-title + .diagnosi-table,
 .pdf-export-active .section-label + .diagnosi-table,
-.pdf-export-active p + .diagnosi-table {
+.pdf-export-active p + .diagnosi-table,
+.pdf-export-active ul + .diagnosi-table,
+.pdf-export-active ol + .diagnosi-table,
+.pdf-export-active .diagnosi-highlight + .diagnosi-table {
   break-before: avoid;
   page-break-before: avoid;
 }
@@ -1358,7 +1420,7 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 20mm 16mm 20mm 18mm;
+    margin: 22mm 22mm 22mm 24mm;
   }
   html {
     -webkit-print-color-adjust: exact;
@@ -1451,13 +1513,21 @@
     page-break-before: avoid;
   }
 
-  /* Titoli che precedono direttamente tabelle: mai spezzati */
+  /* Tabelle: di default mai con break-before, attaccate sempre al contenuto
+     che le precede (titolo, paragrafo, lista, callout). */
+  .diagnosi-table {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
   h2 + .diagnosi-table,
   h3 + .diagnosi-table,
   h4 + .diagnosi-table,
   .section-title + .diagnosi-table,
   .section-label + .diagnosi-table,
-  p + .diagnosi-table {
+  p + .diagnosi-table,
+  ul + .diagnosi-table,
+  ol + .diagnosi-table,
+  .diagnosi-highlight + .diagnosi-table {
     break-before: avoid;
     page-break-before: avoid;
   }

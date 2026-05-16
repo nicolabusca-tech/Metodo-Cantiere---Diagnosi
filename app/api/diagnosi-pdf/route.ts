@@ -72,6 +72,56 @@ export async function GET(req: Request) {
     })
     await new Promise((r) => setTimeout(r, 500))
 
+    // PDF metadata editoriali: title dinamico estratto dalla cover, niente
+    // generator v0.app spurio. Migliora la riconoscibilita del file aperto
+    // in Acrobat / Preview / mobile.
+    await page.evaluate(() => {
+      const azienda = document.querySelector(
+        '.diagnosi-cover .cover-meta-row .cover-meta-label'
+      )
+      // Cerca la prima cover per ricavare AZIENDA + tipo
+      const firstCover = document.querySelector('.diagnosi-cover')
+      let aziendaName = ''
+      if (firstCover) {
+        const rows = firstCover.querySelectorAll('.cover-meta-row')
+        rows.forEach((row) => {
+          const label = (row.querySelector('.cover-meta-label')?.textContent || '')
+            .toUpperCase()
+            .trim()
+          if (label.startsWith('AZIENDA')) {
+            const txt = (row.textContent || '').replace(/AZIENDA:?/i, '').trim()
+            if (txt) aziendaName = txt
+          }
+        })
+      }
+      const baseTitle = 'Diagnosi Strategica'
+      document.title = aziendaName
+        ? `${baseTitle} — ${aziendaName} — Metodo Cantiere`
+        : `${baseTitle} — Metodo Cantiere`
+
+      // Author/Subject/Keywords meta
+      const upsert = (name: string, content: string) => {
+        let m = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null
+        if (!m) {
+          m = document.createElement('meta')
+          m.setAttribute('name', name)
+          document.head.appendChild(m)
+        }
+        m.setAttribute('content', content)
+      }
+      upsert('author', 'Metodo Cantiere ®')
+      upsert(
+        'subject',
+        aziendaName
+          ? `Diagnosi Strategica commerciale per ${aziendaName}`
+          : 'Diagnosi Strategica commerciale Metodo Cantiere'
+      )
+      upsert(
+        'keywords',
+        'diagnosi strategica, metodo cantiere, edilizia, direzione commerciale, pipeline, vendite'
+      )
+    })
+
     await page.emulateMediaType('print')
 
     const pdf = await page.pdf({
