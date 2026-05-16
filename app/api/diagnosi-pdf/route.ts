@@ -49,13 +49,28 @@ export async function GET(req: Request) {
     const page = await browser.newPage()
     page.setDefaultNavigationTimeout(45000)
 
-    await page.goto(printUrl, { waitUntil: 'networkidle0' })
+    await page.goto(printUrl, { waitUntil: 'domcontentloaded' })
 
+    // Aspetta che React monti il documento completo (tutti i volumi se strategica)
+    await page.waitForFunction(
+      () => {
+        const doc = document.querySelector('.diagnosi-document')
+        if (!doc) return false
+        if (doc.classList.contains('diagnosi-strategica-unified')) {
+          return doc.querySelectorAll('[data-volume]').length === 3
+        }
+        return doc.textContent && doc.textContent.length > 200
+      },
+      { timeout: 30000 }
+    )
+
+    // Aspetta fonts e network idle finale
     await page.evaluate(async () => {
       if (document.fonts && document.fonts.ready) {
         await document.fonts.ready
       }
     })
+    await new Promise((r) => setTimeout(r, 500))
 
     await page.emulateMediaType('print')
 
