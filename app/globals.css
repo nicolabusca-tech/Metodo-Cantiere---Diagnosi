@@ -1591,6 +1591,142 @@ td .status-missing,
 }
 
 /* ============================================================================
+   VP-CALLOUT · numero VALORE POTENZIALE in box editoriale XL
+   Estratto da una riga di tabella, mostrato come "highlight finanziario"
+   con kicker uppercase, numero gigante mono e nota descrittiva.
+   ============================================================================ */
+.vp-callout {
+  display: block;
+  margin: 1.4rem 0 2rem;
+  padding: 1.4rem 1.6rem;
+  background: linear-gradient(to bottom, #1A1A1A 0%, #2a2a2a 100%);
+  color: #f4ebd9;
+  border-radius: 3px;
+  border-left: 4px solid var(--mc-accent);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.vp-callout .vp-kicker {
+  font-family: var(--mc-sans);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mc-accent);
+  font-weight: 700;
+  margin-bottom: 0.55rem;
+}
+.vp-callout .vp-amount {
+  font-family: var(--mc-mono);
+  font-size: 2.3rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.4rem;
+}
+.vp-callout .vp-note {
+  font-family: var(--mc-serif);
+  font-style: italic;
+  font-size: 0.98rem;
+  color: #d4c7ad;
+  line-height: 1.45;
+  max-width: 40em;
+  margin: 0;
+}
+
+/* ============================================================================
+   GLOBAL SCORE DASHBOARD · donut chart + profilo
+   Inserito al posto della riga "PUNTEGGIO GLOBALE" della tabella scorecard.
+   Cruscotto visivo immediato del risultato complessivo.
+   ============================================================================ */
+.global-score-dashboard {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin: 1.5rem 0 2rem;
+  padding: 1.5rem 1.6rem;
+  background: var(--mc-paper-warm);
+  border-radius: 4px;
+  border-left: 4px solid var(--mc-accent);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.global-score-dashboard .gsd-donut {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.global-score-dashboard .gsd-info {
+  flex: 1 1 auto;
+}
+.global-score-dashboard .gsd-kicker {
+  font-family: var(--mc-sans);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mc-ink-mute);
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.global-score-dashboard .gsd-profile {
+  font-family: var(--mc-serif);
+  font-size: 1.9rem;
+  font-weight: 400;
+  color: var(--mc-ink);
+  line-height: 1.05;
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.015em;
+}
+.global-score-dashboard .gsd-level {
+  font-family: var(--mc-serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--mc-ink-soft);
+  line-height: 1.35;
+}
+
+/* ============================================================================
+   PULL-QUOTE XL · variante stile rivista per le frasi-chiave con euro
+   Applicata via JS print mode a .diagnosi-highlight contenenti importi.
+   Tipografia XXL serif italic, ariosita generosa, centrato a sinistra.
+   ============================================================================ */
+.diagnosi-highlight.is-pullquote-xl {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--mc-line);
+  border-bottom: 1px solid var(--mc-line);
+  padding: 2rem 0;
+  margin: 2.5rem 0;
+  position: relative;
+}
+.diagnosi-highlight.is-pullquote-xl::before {
+  content: none;
+}
+.diagnosi-highlight.is-pullquote-xl .callout-lead {
+  display: none;
+}
+.diagnosi-highlight.is-pullquote-xl p {
+  font-family: var(--mc-serif);
+  font-style: italic;
+  font-size: 1.85rem;
+  line-height: 1.25;
+  color: var(--mc-ink);
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  max-width: 26em;
+  margin: 0 auto;
+  text-align: left;
+  text-wrap: balance;
+}
+.diagnosi-highlight.is-pullquote-xl strong {
+  font-weight: 600;
+  color: var(--mc-accent-deep);
+  font-style: italic;
+}
+
+/* ============================================================================
    VOLUME OPENER · pagina di apertura volume stile libro premium
    Sostituisce la cover/lettera ripetuta dei Volumi II e III con una vera
    pagina di apertura: kicker "VOLUME", numero romano gigante grigio chiaro,
