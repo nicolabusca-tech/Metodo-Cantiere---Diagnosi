@@ -1591,6 +1591,72 @@ td .status-missing,
 }
 
 /* ============================================================================
+   VOLUME OPENER · pagina di apertura volume stile libro premium
+   Sostituisce la cover/lettera ripetuta dei Volumi II e III con una vera
+   pagina di apertura: kicker "VOLUME", numero romano gigante grigio chiaro,
+   filetto arancione, titolo serif XXL, sottotitolo italic.
+   Effetto "Part II" / capitolo di saggio di pregio.
+   ============================================================================ */
+.volume-opener {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 88vh;
+  padding: 2rem 0;
+  break-before: page;
+  page-break-before: always;
+  break-after: page;
+  page-break-after: always;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.volume-opener .vol-opener-kicker {
+  font-family: var(--mc-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--mc-accent);
+  font-weight: 700;
+  margin: 0 0 1.4rem;
+}
+.volume-opener .vol-opener-number {
+  font-family: var(--mc-serif);
+  font-weight: 200;
+  font-size: 14rem;
+  line-height: 0.82;
+  letter-spacing: -0.045em;
+  color: var(--mc-line);
+  margin: 0 0 2rem;
+  font-variant-numeric: lining-nums;
+}
+.volume-opener .vol-opener-rule {
+  width: 120px;
+  height: 2px;
+  background: var(--mc-accent);
+  margin: 0 0 1.8rem;
+  border: 0;
+}
+.volume-opener .vol-opener-title {
+  font-family: var(--mc-serif);
+  font-weight: 400;
+  font-size: 4.4rem;
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--mc-ink);
+  margin: 0 0 1rem;
+}
+.volume-opener .vol-opener-subtitle {
+  font-family: var(--mc-serif);
+  font-style: italic;
+  font-size: 1.35rem;
+  color: var(--mc-ink-soft);
+  margin: 0;
+  max-width: 32em;
+  line-height: 1.4;
+}
+
+/* ============================================================================
    FIX PRAGMATICI V1.1.1 · pulizia dei pattern emessi da n8n
    ---
    Questi selettori difendono il rendering da tre pattern che oggi escono

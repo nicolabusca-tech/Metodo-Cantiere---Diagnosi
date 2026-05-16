@@ -76,8 +76,12 @@ export async function GET(req: Request) {
     // 1) rimuove simbolo ® (marchio non ancora registrato)
     // 2) sostituisce le mini-bar ASCII di blocchi (█░) con widget SVG percentuale
     //    estraendo il numero da "Peso nel punteggio globale: NN%" nel paragrafo
+    // 3) rimuove cover e lettera duplicate dai Volume 2 e 3 (la lettera ha
+    //    senso solo all'inizio di Volume I)
+    // 4) inserisce una pagina di apertura distintiva per Volume II e III
+    //    (numero romano gigante stile libro)
     await page.evaluate(() => {
-      // Step 1: strip ® da tutti i text nodes
+      // Step 1: strip ® e caratteri di blocco ASCII da tutti i text nodes
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
       const toFix: Text[] = []
       let n: Node | null
@@ -93,8 +97,7 @@ export async function GET(req: Request) {
         }
       })
 
-      // Step 2: trova i <p> con "Peso nel punteggio globale: NN%" e sostituisci
-      // con un widget grafico vero (barra orizzontale gradient + percent label)
+      // Step 2: trasforma "Peso nel punteggio globale: NN%" in widget grafico
       const pPesos = Array.from(document.querySelectorAll('p')).filter((p) =>
         /Peso nel punteggio globale:\s*\d+/i.test(p.textContent || '')
       )
@@ -104,13 +107,43 @@ export async function GET(req: Request) {
         const pct = Math.max(0, Math.min(100, parseInt(m[1], 10)))
         const widget = document.createElement('div')
         widget.className = 'area-weight-widget'
-        widget.innerHTML = `
-          <div class="aww-label">Peso nel punteggio globale</div>
-          <div class="aww-track"><div class="aww-fill" style="width:${pct}%"></div></div>
-          <div class="aww-value">${pct}<span class="aww-pct">%</span></div>
-        `
+        widget.innerHTML =
+          '<div class="aww-label">Peso nel punteggio globale</div>' +
+          '<div class="aww-track"><div class="aww-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="aww-value">' + pct + '<span class="aww-pct">%</span></div>'
         p.replaceWith(widget)
       })
+
+      // Step 3 + 4: cover e lettera duplicate sui volumi 2 e 3 vengono rimosse
+      // e sostituite con una pagina di apertura volume stile libro
+      const volumeOpenerInfo: Record<string, { num: string; title: string; subtitle: string }> = {
+        '2': { num: 'II', title: 'La Diagnosi', subtitle: 'Dove si perdono i contratti' },
+        '3': { num: 'III', title: 'Il Percorso', subtitle: "Piano d'azione in 90 giorni" },
+      }
+      Object.keys(volumeOpenerInfo).forEach((volNum) => {
+        const vol = document.querySelector('[data-volume="' + volNum + '"]')
+        if (!vol) return
+        // Rimuovi cover e lettera duplicate (sono ridondanti dopo il Volume I)
+        vol.querySelectorAll(':scope > .diagnosi-cover, :scope > .diagnosi-letter').forEach(
+          (el) => el.remove()
+        )
+        // Inserisci pagina opener distintiva all'inizio del volume
+        const info = volumeOpenerInfo[volNum]
+        const opener = document.createElement('div')
+        opener.className = 'volume-opener'
+        opener.innerHTML =
+          '<div class="vol-opener-kicker">Volume</div>' +
+          '<div class="vol-opener-number">' + info.num + '</div>' +
+          '<div class="vol-opener-rule"></div>' +
+          '<h1 class="vol-opener-title">' + info.title + '</h1>' +
+          '<p class="vol-opener-subtitle">' + info.subtitle + '</p>'
+        vol.insertBefore(opener, vol.firstChild)
+      })
+
+      // Step 5: il footer hardcoded di ogni pagina del template viene rimosso
+      // perche' la numerazione e il branding li mette ora Chromium via
+      // footerTemplate (continuo e affidabile)
+      document.querySelectorAll('.diagnosi-footer').forEach((el) => el.remove())
     })
 
     // PDF metadata editoriali: title dinamico estratto dalla cover, niente
@@ -165,11 +198,22 @@ export async function GET(req: Request) {
 
     await page.emulateMediaType('print')
 
+    const footerTemplate = `
+      <div style="font-family: 'Inter', -apple-system, sans-serif; font-size: 8pt; color: #888; width: 100%; padding: 0 22mm 0 24mm; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;">
+        <span style="letter-spacing: 0.1em; text-transform: uppercase;">Metodo Cantiere &mdash; www.metodocantiere.com</span>
+        <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #555;">
+          <span class="pageNumber"></span> / <span class="totalPages"></span>
+        </span>
+      </div>`
+
     const pdf = await page.pdf({
       format: 'a4',
       printBackground: true,
-      preferCSSPageSize: true,
-      displayHeaderFooter: false,
+      preferCSSPageSize: false,
+      displayHeaderFooter: true,
+      headerTemplate: '<div></div>',
+      footerTemplate,
+      margin: { top: '22mm', right: '22mm', bottom: '18mm', left: '24mm' },
       outline: true,
       tagged: true,
     })
