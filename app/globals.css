@@ -223,11 +223,13 @@
   color: var(--mc-accent);
 }
 
-/* Drop cap automatico sul primo paragrafo di ogni sezione e di ogni
-   divider. Da un tocco editoriale premium ad ogni apertura di capitolo. */
-.diagnosi-document .diagnosi-section > p:first-of-type::first-letter,
-.diagnosi-document .diagnosi-divider + p::first-letter,
-.diagnosi-document .section-header + p::first-letter {
+/* Drop cap automatico sul primo paragrafo di ogni sezione.
+   Restretto al primo <p> di prosa che NON contiene <strong> all'inizio
+   (cosi escludiamo i mini-titoli interni delle scorecard area emessi
+   da n8n come "<p><strong>Nome Area</strong>...Peso 25%</p>"). */
+.diagnosi-document .diagnosi-section > p:first-of-type:not(:has(> strong:first-child))::first-letter,
+.diagnosi-document .diagnosi-divider + p:not(:has(> strong:first-child))::first-letter,
+.diagnosi-document .section-header + p:not(:has(> strong:first-child))::first-letter {
   font-family: var(--mc-serif);
   font-weight: 400;
   float: left;
@@ -1090,37 +1092,76 @@
 .num-cell.is-bench::after { background: var(--mc-ink-mute); }
 
 /* ============================================================================
-   STATUS CHIPS (cerchietti colorati con icone SVG vettoriali)
-   Il carattere unicode dentro lo span viene nascosto e sostituito da
-   un'icona SVG inline per garantire nitidezza vettoriale e visibilita
-   indipendente dal font system (utile su Chromium serverless).
+   STATUS · doppio uso
+   ---
+   Il template HTML emesso da n8n usa le stesse classi (.status-ok/warning/
+   missing) in DUE contesti diversi:
+   1) badge testo accanto al punteggio area ("CRITICO", "NELLA MEDIA", ecc.)
+   2) cerchietto icona dentro le celle delle tabelle valutative
+   Distinguiamo via contesto: fuori da <td> il chip mostra il testo come
+   badge colorato; dentro <td> diventa un cerchio con icona SVG.
    ============================================================================ */
+
+/* Default: badge testuale con sfondo colorato (es. CRITICO, NELLA MEDIA) */
 .status-ok,
 .status-warning,
 .status-missing {
+  display: inline-block;
+  font-family: var(--mc-sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.22em 0.65em;
+  border-radius: 3px;
+  line-height: 1.2;
+  vertical-align: middle;
+  margin-right: 0.45rem;
+  white-space: nowrap;
+}
+.status-ok      { background: var(--mc-ok-bg);   color: var(--mc-ok); }
+.status-warning { background: var(--mc-warn-bg); color: var(--mc-warn); }
+.status-missing { background: var(--mc-crit-bg); color: var(--mc-crit); }
+
+/* Dentro celle tabella: trasforma in cerchio con icona SVG vettoriale */
+td .status-ok,
+td .status-warning,
+td .status-missing,
+.diagnosi-table .status-ok,
+.diagnosi-table .status-warning,
+.diagnosi-table .status-missing {
   display: inline-block;
   box-sizing: border-box;
   width: 1.05rem;
   height: 1.05rem;
   border-radius: 50%;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
+  letter-spacing: 0;
+  text-transform: none;
   text-indent: 200%;
   overflow: hidden;
   white-space: nowrap;
+  color: transparent;
   margin-right: 0.45rem;
   vertical-align: -0.18rem;
   background-repeat: no-repeat;
   background-position: center center;
   background-size: 64% 64%;
 }
-.status-ok {
+td .status-ok,
+.diagnosi-table .status-ok {
   background-color: var(--mc-ok-bg);
   background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A8A3A' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 13 9 18 20 6'/%3E%3C/svg%3E");
 }
-.status-warning {
+td .status-warning,
+.diagnosi-table .status-warning {
   background-color: var(--mc-warn-bg);
   background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23B87700' stroke='none'%3E%3Cpath d='M12 3 L22 21 L2 21 Z' fill-opacity='0.18'/%3E%3Crect x='11' y='9' width='2' height='6' rx='1'/%3E%3Crect x='11' y='17' width='2' height='2' rx='1'/%3E%3C/svg%3E");
 }
-.status-missing {
+td .status-missing,
+.diagnosi-table .status-missing {
   background-color: var(--mc-crit-bg);
   background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B02E2E' stroke-width='4' stroke-linecap='round'%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3C/svg%3E");
 }
@@ -1583,9 +1624,9 @@
 }
 
 /* 2 · Mini bar di punteggio fatte con blocchi unicode (■■■░░░).
-      Quando il template emette un elemento con SOLO caratteri di blocco
-      lo nascondiamo: e' un fallback grezzo, in attesa che n8n emetta
-      la vera num-cell con attributo --pct. */
+      La sostituzione vera avviene client-side nell'API PDF (route handler)
+      che trasforma il pattern in widget .area-weight-widget. Manteniamo
+      questi selettori come fallback per markup futuri di n8n. */
 .diagnosi-document .score-bar,
 .diagnosi-document .score-blocks,
 .diagnosi-document .area-bar,
@@ -1595,6 +1636,60 @@
 .diagnosi-document .area-meter,
 .diagnosi-document .punteggio-bar {
   display: none;
+}
+
+/* Widget peso punteggio area, sostituisce le mini-bar ASCII grezze.
+   Barra orizzontale con fill gradient brand + numero percent in mono. */
+.area-weight-widget {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 0.4rem 1.2rem;
+  align-items: center;
+  margin: 0.8rem 0 1.6rem;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.area-weight-widget .aww-label {
+  grid-column: 1;
+  grid-row: 1;
+  font-family: var(--mc-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mc-ink-mute);
+}
+.area-weight-widget .aww-track {
+  grid-column: 1;
+  grid-row: 2;
+  height: 7px;
+  background: var(--mc-line-soft);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.area-weight-widget .aww-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--mc-accent), var(--mc-accent-deep));
+  border-radius: 4px;
+}
+.area-weight-widget .aww-value {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-family: var(--mc-mono);
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--mc-ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.02em;
+}
+.area-weight-widget .aww-pct {
+  font-size: 0.82rem;
+  color: var(--mc-ink-mute);
+  margin-left: 0.08em;
+  font-weight: 400;
 }
 
 /* 3 · Pre-header pagina 1 (logo + titolo generico + data) emesso dal

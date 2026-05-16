@@ -69,7 +69,7 @@ export function DiagnosiWithDownload({
         </div>
         <div className="mb-8 pb-6 border-b border-neutral-200 pr-32 print:pr-0">
           <h1 className="text-3xl font-bold text-neutral-900">
-            {title} Metodo Cantiere®
+            {title} Metodo Cantiere
           </h1>
           <p className="text-sm text-neutral-500 mt-2">{createdAt}</p>
         </div>

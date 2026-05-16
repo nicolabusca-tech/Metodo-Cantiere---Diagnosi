@@ -102,7 +102,7 @@ export default async function ProdottiPage() {
           <ProductCard
             state={stateAnalisi}
             href={linkAnalisi}
-            title="Analisi Lampo Metodo Cantiere®"
+            title="Analisi Lampo Metodo Cantiere"
             subtitle="La radiografia veloce della tua impresa digitale"
             price="€147,00"
             features={[
@@ -122,7 +122,7 @@ export default async function ProdottiPage() {
           <ProductCard
             state={stateDiagnosi}
             href={linkDiagnosi}
-            title="Diagnosi Strategica Metodo Cantiere®"
+            title="Diagnosi Strategica Metodo Cantiere"
             subtitle="Analisi approfondita e roadmap per la crescita digitale"
             price="€497,00"
             features={[

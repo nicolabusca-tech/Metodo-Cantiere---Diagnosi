@@ -295,7 +295,7 @@ export default function ReviewPage() {
         {/* Header */}
         <div className="mb-6 print:hidden">
           <h1 className="text-2xl font-bold text-neutral-900">
-            Review: {tipoLabel} Metodo Cantiere®
+            Review: {tipoLabel} Metodo Cantiere
           </h1>
           <p className="text-sm text-neutral-500 mt-1">
             Utente: {diagnosi.user_id} &middot; Creata il{' '}
@@ -459,7 +459,7 @@ export default function ReviewPage() {
                   </div>
                   <div className="mb-8 pb-6 border-b border-neutral-200 print:pr-0">
                     <h1 className="text-3xl font-bold text-neutral-900">
-                      {tipoLabel} Metodo Cantiere®
+                      {tipoLabel} Metodo Cantiere
                     </h1>
                     <p className="text-sm text-neutral-500 mt-2">
                       Generata il{' '}

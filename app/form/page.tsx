@@ -461,7 +461,7 @@ export default function AnalisiLampoForm() {
         <div className="text-center mb-8">
           <img src="/logo-metodo-cantiere.png" alt="Metodo Cantiere Logo" className="h-16 mx-auto mb-6" />
           <h1 className="text-4xl font-bold text-gray-900 mb-2 text-balance">
-            {product === "diagnosi-strategica" ? "Diagnosi Strategica Metodo Cantiere®" : "Analisi Lampo Metodo Cantiere®"}
+            {product === "diagnosi-strategica" ? "Diagnosi Strategica Metodo Cantiere" : "Analisi Lampo Metodo Cantiere"}
           </h1>
           <p className="text-gray-600 text-lg">
             {product === "diagnosi-strategica"

@@ -20,7 +20,7 @@ const mono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Analisi Lampo - Metodo Cantiere ®',
+  title: 'Diagnosi Strategica - Metodo Cantiere',
   description: 'Analisi Lampo - Metodo Cantiere',
   generator: 'v0.app',
 }

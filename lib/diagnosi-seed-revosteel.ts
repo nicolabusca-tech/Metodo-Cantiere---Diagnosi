@@ -11,7 +11,7 @@ export const REVOSTEEL_DIAGNOSI_HTML = `
       <div class="cover-meta-row"><span class="cover-meta-label">Settore:</span> Costruzioni CFS &mdash; B2B e B2C</div>
       <div class="cover-meta-row"><span class="cover-meta-label">Area:</span> Nord Italia</div>
       <div class="cover-meta-row"><span class="cover-meta-label">Data:</span> Marzo 2026</div>
-      <div class="cover-meta-row"><span class="cover-meta-label">Redatto da:</span> Nicola Busca &mdash; Metodo Cantiere&reg;</div>
+      <div class="cover-meta-row"><span class="cover-meta-label">Redatto da:</span> Nicola Busca &mdash; Metodo Cantiere</div>
     </div>
     <div class="cover-volumes">
       <p class="cover-volumes-intro">Questo documento &egrave; composto da tre volumi</p>
@@ -60,7 +60,7 @@ export const REVOSTEEL_DIAGNOSI_HTML = `
 
     <div class="letter-signature">
       <p class="signature-name">Nicola Busca</p>
-      <p class="signature-role">Fondatore &mdash; Metodo Cantiere&reg;</p>
+      <p class="signature-role">Fondatore &mdash; Metodo Cantiere</p>
       <p class="signature-url">www.metodocantiere.com</p>
     </div>
 
@@ -103,10 +103,10 @@ export const REVOSTEEL_DIAGNOSI_HTML = `
 
     <div class="section-author">
       <p class="signature-name">Nicola Busca</p>
-      <p class="signature-role">Fondatore &mdash; Metodo Cantiere&reg;</p>
+      <p class="signature-role">Fondatore &mdash; Metodo Cantiere</p>
     </div>
 
-    <footer class="diagnosi-footer">Metodo Cantiere&reg; &mdash; www.metodocantiere.com<span class="footer-page">Pag. 4</span></footer>
+    <footer class="diagnosi-footer">Metodo Cantiere &mdash; www.metodocantiere.com<span class="footer-page">Pag. 4</span></footer>
   </section>
 
   <div class="diagnosi-page-break"></div>
@@ -208,7 +208,7 @@ export const REVOSTEEL_DIAGNOSI_HTML = `
       </tbody>
     </table>
 
-    <footer class="diagnosi-footer">Metodo Cantiere&reg; &mdash; www.metodocantiere.com<span class="footer-page">Pag. 5</span></footer>
+    <footer class="diagnosi-footer">Metodo Cantiere &mdash; www.metodocantiere.com<span class="footer-page">Pag. 5</span></footer>
   </section>
 
   <div class="diagnosi-page-break"></div>
@@ -280,7 +280,7 @@ export const REVOSTEEL_DIAGNOSI_HTML = `
 
     <p>Chi cerca su Google termini come &ldquo;costruzione casa acciaio Nord Italia&rdquo; non trova RevoSteel Building in modo strutturato. In questo segmento non esiste ancora un player dominante sul digitale. Chi arriva per primo con una presenza strutturata occupa quello spazio in modo stabile.</p>
 
-    <footer class="diagnosi-footer">Metodo Cantiere&reg; &mdash; www.metodocantiere.com<span class="footer-page">Pag. 7</span></footer>
+    <footer class="diagnosi-footer">Metodo Cantiere &mdash; www.metodocantiere.com<span class="footer-page">Pag. 7</span></footer>
   </section>
 
   <div class="diagnosi-page-break"></div>
@@ -376,7 +376,7 @@ export const REVOSTEEL_DIAGNOSI_HTML = `
       </tbody>
     </table>
 
-    <footer class="diagnosi-footer">Metodo Cantiere&reg; &mdash; www.metodocantiere.com<span class="footer-page">Pag. 9</span></footer>
+    <footer class="diagnosi-footer">Metodo Cantiere &mdash; www.metodocantiere.com<span class="footer-page">Pag. 9</span></footer>
   </section>
 
   <div class="diagnosi-page-break"></div>
@@ -449,7 +449,7 @@ export const REVOSTEEL_DIAGNOSI_HTML = `
       <p class="next-volume-desc">Dove si perdono i contratti. Quanto vale ogni anello aperto.</p>
     </div>
 
-    <footer class="diagnosi-footer">Metodo Cantiere&reg; &mdash; www.metodocantiere.com<span class="footer-page">Pag. 11</span></footer>
+    <footer class="diagnosi-footer">Metodo Cantiere &mdash; www.metodocantiere.com<span class="footer-page">Pag. 11</span></footer>
   </section>
 
 </div>

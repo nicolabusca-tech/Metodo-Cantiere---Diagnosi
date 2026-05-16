@@ -72,6 +72,47 @@ export async function GET(req: Request) {
     })
     await new Promise((r) => setTimeout(r, 500))
 
+    // Pulizia contenuto dinamico emesso dal workflow:
+    // 1) rimuove simbolo ® (marchio non ancora registrato)
+    // 2) sostituisce le mini-bar ASCII di blocchi (█░) con widget SVG percentuale
+    //    estraendo il numero da "Peso nel punteggio globale: NN%" nel paragrafo
+    await page.evaluate(() => {
+      // Step 1: strip ® da tutti i text nodes
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+      const toFix: Text[] = []
+      let n: Node | null
+      while ((n = walker.nextNode())) {
+        const t = n as Text
+        if (t.nodeValue && /[®█░■□▒▓]/u.test(t.nodeValue)) {
+          toFix.push(t)
+        }
+      }
+      toFix.forEach((t) => {
+        if (t.nodeValue) {
+          t.nodeValue = t.nodeValue.replace(/®/g, '').replace(/[█░■□▒▓]/gu, '')
+        }
+      })
+
+      // Step 2: trova i <p> con "Peso nel punteggio globale: NN%" e sostituisci
+      // con un widget grafico vero (barra orizzontale gradient + percent label)
+      const pPesos = Array.from(document.querySelectorAll('p')).filter((p) =>
+        /Peso nel punteggio globale:\s*\d+/i.test(p.textContent || '')
+      )
+      pPesos.forEach((p) => {
+        const m = (p.textContent || '').match(/Peso nel punteggio globale:\s*(\d+)/i)
+        if (!m) return
+        const pct = Math.max(0, Math.min(100, parseInt(m[1], 10)))
+        const widget = document.createElement('div')
+        widget.className = 'area-weight-widget'
+        widget.innerHTML = `
+          <div class="aww-label">Peso nel punteggio globale</div>
+          <div class="aww-track"><div class="aww-fill" style="width:${pct}%"></div></div>
+          <div class="aww-value">${pct}<span class="aww-pct">%</span></div>
+        `
+        p.replaceWith(widget)
+      })
+    })
+
     // PDF metadata editoriali: title dinamico estratto dalla cover, niente
     // generator v0.app spurio. Migliora la riconoscibilita del file aperto
     // in Acrobat / Preview / mobile.
@@ -109,7 +150,7 @@ export async function GET(req: Request) {
         }
         m.setAttribute('content', content)
       }
-      upsert('author', 'Metodo Cantiere ®')
+      upsert('author', 'Metodo Cantiere')
       upsert(
         'subject',
         aziendaName
@@ -129,6 +170,8 @@ export async function GET(req: Request) {
       printBackground: true,
       preferCSSPageSize: true,
       displayHeaderFooter: false,
+      outline: true,
+      tagged: true,
     })
 
     const filename = `diagnosi-${token}-${new Date().toISOString().slice(0, 10)}.pdf`
