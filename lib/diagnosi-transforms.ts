@@ -141,13 +141,13 @@ export function applyDiagnosiTransforms(
   let n: Node | null
   while ((n = walker.nextNode())) {
     const t = n as Text
-    if (t.nodeValue && /[®█░■□▒▓]/u.test(t.nodeValue)) {
+    if (t.nodeValue && /[®\u{2580}-\u{259F}]/u.test(t.nodeValue)) {
       toFix.push(t)
     }
   }
   toFix.forEach((t) => {
     if (t.nodeValue) {
-      t.nodeValue = t.nodeValue.replace(/®/g, '').replace(/[█░■□▒▓]/gu, '')
+      t.nodeValue = t.nodeValue.replace(/®/g, '').replace(/[\u{2580}-\u{259F}]/gu, '')
     }
   })
 
@@ -447,10 +447,10 @@ export function applyLampoTransforms(scope: Document | HTMLElement): void {
   let n: Node | null
   while ((n = walker.nextNode())) {
     const t = n as Text
-    if (t.nodeValue && /[®█░■□▒▓]/u.test(t.nodeValue)) toFix.push(t)
+    if (t.nodeValue && /[®\u{2580}-\u{259F}]/u.test(t.nodeValue)) toFix.push(t)
   }
   toFix.forEach((t) => {
-    if (t.nodeValue) t.nodeValue = t.nodeValue.replace(/®/g, '').replace(/[█░■□▒▓]/gu, '')
+    if (t.nodeValue) t.nodeValue = t.nodeValue.replace(/®/g, '').replace(/[\u{2580}-\u{259F}]/gu, '')
   })
 
   // 3. Score banner: H2 "Il tuo livello commerciale" + H1 successivo dentro corpo
@@ -595,6 +595,74 @@ export function applyLampoTransforms(scope: Document | HTMLElement): void {
     })
   })
 
-  // 8. Mark wrapper come trasformato
+  // 8. CTA finale: "I tuoi 147€ non sono un costo. Sono un acconto."
+  //    Markdown lo emette come h3 centrato; lo trasformo in un box CTA arancio
+  //    con label kicker, claim grande e nota esplicativa nel paragrafo
+  //    successivo (se presente).
+  Array.from(lampoDoc.querySelectorAll('h3')).forEach((h3) => {
+    const el = h3 as HTMLHeadingElement
+    if (el.dataset.lampoCta) return
+    const txt = (el.textContent || '').trim()
+    if (!/i\s+tuoi\s+\d+\s*[€E]\s+non/i.test(txt)) return
+    el.dataset.lampoCta = '1'
+    const claim = txt
+    // Cerco il paragrafo seguente come nota
+    let note: HTMLElement | null = null
+    let nxt = el.nextElementSibling
+    while (nxt) {
+      if (nxt.tagName === 'P') { note = nxt as HTMLElement; break }
+      if (nxt.tagName === 'H2' || nxt.tagName === 'H3' || nxt.tagName === 'HR') break
+      nxt = nxt.nextElementSibling
+    }
+    const cta = ownerDoc.createElement('section')
+    cta.className = 'lampo-final-cta'
+    cta.innerHTML =
+      '<div class="lfc-kicker">Vuoi andare oltre la fotografia</div>' +
+      '<div class="lfc-claim">' + claim + '</div>' +
+      (note ? '<div class="lfc-note">' + note.innerHTML + '</div>' : '')
+    el.parentNode?.insertBefore(cta, el)
+    el.remove()
+    if (note) note.remove()
+  })
+
+  // 9. "Il passo successivo" + bullet "[Prenota..." finale come CTA-conclude
+  Array.from(lampoDoc.querySelectorAll('h3, p > strong')).forEach((node) => {
+    const el = node as HTMLElement
+    if (el.dataset.lampoNext) return
+    const txt = (el.textContent || '').trim()
+    if (!/^il\s+passo\s+successivo$/i.test(txt)) return
+    // Trovo il blocco contenitore (h3 stesso o suo parent p)
+    const anchor = el.tagName === 'H3' ? el : (el.parentElement as HTMLElement | null)
+    if (!anchor) return
+    anchor.dataset.lampoNext = '1'
+    // Raccolgo tutto fino a hr o fine
+    const collected: Element[] = []
+    let nxt = anchor.nextElementSibling
+    while (nxt) {
+      if (nxt.tagName === 'HR' || nxt.tagName === 'H2' || nxt.tagName === 'H3') break
+      collected.push(nxt)
+      nxt = nxt.nextElementSibling
+    }
+    if (collected.length === 0) return
+    const box = ownerDoc.createElement('section')
+    box.className = 'lampo-next-step'
+    let html = '<div class="lns-label">Il passo successivo</div><div class="lns-content">'
+    collected.forEach((c) => { html += c.outerHTML })
+    html += '</div>'
+    box.innerHTML = html
+    anchor.parentNode?.insertBefore(box, anchor)
+    anchor.remove()
+    collected.forEach((c) => c.remove())
+  })
+
+  // 10. Tabelle non-scorecard: se ha header e non e' una scorecard a 3 col,
+  //     applica una classe per stile compatto con prima colonna in evidenza.
+  Array.from(lampoDoc.querySelectorAll('table')).forEach((tbl) => {
+    if ((tbl as HTMLElement).classList.contains('lampo-scorecard-table')) return
+    const headers = tbl.querySelectorAll('thead th').length
+    if (headers >= 3) (tbl as HTMLElement).classList.add('lampo-compare-table')
+  })
+
+  // 11. Mark wrapper come trasformato
   if (markerHost) markerHost.setAttribute('data-lampo-transformed', '1')
 }
