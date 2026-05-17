@@ -2701,6 +2701,15 @@ td .status-missing,
   border-radius: 0 10px 10px 0;
   break-inside: avoid;
   page-break-inside: avoid;
+  /* Resta attaccato a cio' che lo precede: niente nuova pagina solo per
+     questo box. Stessa cosa per la final CTA. */
+  break-before: avoid;
+  page-break-before: avoid;
+}
+
+.lampo-final-cta {
+  break-before: avoid;
+  page-break-before: avoid;
 }
 
 .lampo-next-step .lns-label {

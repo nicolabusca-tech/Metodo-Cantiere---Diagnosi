@@ -447,10 +447,20 @@ export function applyLampoTransforms(scope: Document | HTMLElement): void {
   let n: Node | null
   while ((n = walker.nextNode())) {
     const t = n as Text
-    if (t.nodeValue && /[®\u{2580}-\u{259F}]/u.test(t.nodeValue)) toFix.push(t)
+    if (
+      t.nodeValue &&
+      /[®\u{2580}-\u{259F}\u{2190}-\u{21FF}\u{27F0}-\u{27FF}\u{2900}-\u{297F}]/u.test(t.nodeValue)
+    ) toFix.push(t)
   }
   toFix.forEach((t) => {
-    if (t.nodeValue) t.nodeValue = t.nodeValue.replace(/®/g, '').replace(/[\u{2580}-\u{259F}]/gu, '')
+    if (!t.nodeValue) return
+    t.nodeValue = t.nodeValue
+      .replace(/®/g, '')
+      .replace(/[\u{2580}-\u{259F}]/gu, '')
+      // Frecce: font Source Serif 4 / Inter non hanno glyph per U+2190+,
+      // Chromium fallback mostra un rettangolo che assomiglia a |. Sostituisco
+      // con > ASCII che renderizza ovunque. Non bellissimo ma robusto.
+      .replace(/[\u{2190}-\u{21FF}\u{27F0}-\u{27FF}\u{2900}-\u{297F}]/gu, '>')
   })
 
   // 3. Score banner: H2 "Il tuo livello commerciale" + H1 successivo dentro corpo
@@ -596,16 +606,15 @@ export function applyLampoTransforms(scope: Document | HTMLElement): void {
   })
 
   // 8. CTA finale: "I tuoi 147€ non sono un costo. Sono un acconto."
-  //    Markdown lo emette come h3 centrato; lo trasformo in un box CTA arancio
-  //    con label kicker, claim grande e nota esplicativa nel paragrafo
-  //    successivo (se presente).
-  Array.from(lampoDoc.querySelectorAll('h3')).forEach((h3) => {
-    const el = h3 as HTMLHeadingElement
-    if (el.dataset.lampoCta) return
-    const txt = (el.textContent || '').trim()
-    if (!/i\s+tuoi\s+\d+\s*[€E]\s+non/i.test(txt)) return
+  //    Nel markdown e' h2 con emoji 🎁 davanti; la cerco su h2 e h3.
+  Array.from(lampoDoc.querySelectorAll('h2, h3')).forEach((h) => {
+    const el = h as HTMLHeadingElement
+    if (el.dataset.lampoCta || el.dataset.lampoBanner) return
+    const rawTxt = (el.textContent || '').trim()
+    if (!/i\s+tuoi\s+\d+\s*[€E]\s+non/i.test(rawTxt)) return
     el.dataset.lampoCta = '1'
-    const claim = txt
+    // Pulisce l'emoji 🎁 iniziale + altri emoji decorativi
+    const claim = rawTxt.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}]+\s*/gu, '').trim()
     // Cerco il paragrafo seguente come nota
     let note: HTMLElement | null = null
     let nxt = el.nextElementSibling
